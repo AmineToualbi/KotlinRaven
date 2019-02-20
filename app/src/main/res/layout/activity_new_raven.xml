@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".NewRaven"
+    android:background="@color/color4"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:weightSum="1">
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="New Entry"
+        android:textColor="@color/color1"
+        android:textSize="30dp"
+        tools:layout_constraintTop_creator="1"
+        tools:layout_constraintRight_creator="1"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginTop="16dp"
+        tools:layout_constraintLeft_creator="1"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Name of the recipient"
+        android:textColor="@color/color2"
+        tools:layout_constraintBottom_creator="1"
+        app:layout_constraintBottom_toTopOf="@+id/enteredName"
+        android:layout_marginStart="27dp"
+        tools:layout_constraintLeft_creator="1"
+        android:layout_marginBottom="5dp"
+        app:layout_constraintLeft_toLeftOf="@+id/textView"
+        android:layout_marginLeft="27dp" />
+
+    <EditText
+        android:id="@+id/enteredName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/color5"
+        android:inputType="textPersonName"
+        tools:layout_constraintRight_creator="1"
+        tools:layout_constraintBottom_creator="1"
+        app:layout_constraintBottom_toTopOf="@+id/textView"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintRight_toRightOf="parent"
+        tools:layout_constraintLeft_creator="1"
+        android:layout_marginBottom="21dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Phone number of the recipient"
+        android:textColor="@color/color2"
+        android:id="@+id/textView"
+        tools:layout_constraintRight_creator="1"
+        tools:layout_constraintBottom_creator="1"
+        app:layout_constraintBottom_toTopOf="@+id/enteredNumber"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintRight_toRightOf="@+id/textView2"
+        android:layout_marginBottom="6dp"
+        android:layout_marginRight="16dp" />
+
+    <EditText
+        android:id="@+id/enteredNumber"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/color5"
+        android:inputType="phone"
+        tools:layout_constraintRight_creator="1"
+        tools:layout_constraintBottom_creator="1"
+        app:layout_constraintBottom_toTopOf="@+id/enteredLatitude"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintRight_toRightOf="parent"
+        tools:layout_constraintLeft_creator="1"
+        android:layout_marginBottom="42dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="GPS coordinates (Decimal Degrees)"
+        android:textColor="@color/color2"
+        android:id="@+id/textView2"
+        tools:layout_constraintRight_creator="1"
+        tools:layout_constraintBottom_creator="1"
+        app:layout_constraintBottom_toTopOf="@+id/enteredLatitude"
+        app:layout_constraintRight_toRightOf="parent"
+        tools:layout_constraintLeft_creator="1"
+        android:layout_marginBottom="6dp"
+        app:layout_constraintLeft_toLeftOf="parent" />
+
+    <EditText
+        android:id="@+id/enteredLatitude"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/color5"
+        android:hint="Latitude (e.g.: 50.9)"
+        android:inputType="numberDecimal"
+        tools:layout_constraintRight_creator="1"
+        tools:layout_constraintBottom_creator="1"
+        app:layout_constraintBottom_toTopOf="@+id/enteredLongitude"
+        app:layout_constraintRight_toRightOf="@+id/enteredNumber"
+        tools:layout_constraintLeft_creator="1"
+        android:layout_marginBottom="2dp"
+        app:layout_constraintLeft_toLeftOf="@+id/enteredNumber" />
+
+    <EditText
+        android:id="@+id/enteredLongitude"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/color5"
+        android:hint="Longitude (e.g.: 37.3)"
+        android:inputType="numberDecimal"
+        tools:layout_constraintRight_creator="1"
+        tools:layout_constraintBottom_creator="1"
+        app:layout_constraintBottom_toTopOf="@+id/enteredMessage"
+        app:layout_constraintRight_toRightOf="@+id/enteredLatitude"
+        tools:layout_constraintLeft_creator="1"
+        android:layout_marginBottom="42dp"
+        app:layout_constraintLeft_toLeftOf="@+id/enteredLatitude" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Message to the recipient"
+        android:textColor="@color/color2"
+        tools:layout_constraintRight_creator="1"
+        tools:layout_constraintBottom_creator="1"
+        app:layout_constraintBottom_toTopOf="@+id/enteredMessage"
+        app:layout_constraintRight_toRightOf="@+id/textView2"
+        tools:layout_constraintLeft_creator="1"
+        android:layout_marginBottom="5dp"
+        app:layout_constraintLeft_toLeftOf="@+id/textView2"
+        android:id="@+id/textView3" />
+
+    <EditText
+        android:id="@+id/enteredMessage"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/color5"
+        android:hint="e.g.: Just got home!"
+        android:inputType="textCapSentences|textAutoCorrect"
+        tools:layout_constraintRight_creator="1"
+        tools:layout_constraintBottom_creator="1"
+        app:layout_constraintRight_toRightOf="@+id/enteredLongitude"
+        tools:layout_constraintLeft_creator="1"
+        app:layout_constraintLeft_toLeftOf="@+id/enteredLongitude"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="163dp"
+        app:layout_constraintHorizontal_bias="0.0" />
+
+
+    <ImageButton
+        android:id="@+id/validButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/color4"
+        android:tint="@color/valid"
+        app:srcCompat="@drawable/ic_assignment_turned_in_black_50dp"
+        tools:layout_conversion_absoluteHeight="65dp"
+        tools:layout_conversion_absoluteWidth="73dp"
+        tools:layout_conversion_absoluteX="209dp"
+        tools:layout_conversion_absoluteY="486dp"
+        tools:layout_constraintBottom_creator="1"
+        android:layout_marginStart="25dp"
+        app:layout_constraintBottom_toBottomOf="@+id/cancelButton"
+        tools:layout_constraintLeft_creator="1"
+        android:layout_marginBottom="2dp"
+        app:layout_constraintLeft_toRightOf="@+id/cancelButton"
+        android:layout_marginLeft="25dp" />
+
+    <ImageButton
+        android:id="@+id/cancelButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@drawable/ic_cancel_black_40dp"
+        android:backgroundTint="@color/color4"
+        android:tint="@color/cancel"
+        tools:layout_constraintTop_creator="1"
+        tools:layout_constraintRight_creator="1"
+        android:layout_marginStart="89dp"
+        android:layout_marginEnd="86dp"
+        app:layout_constraintRight_toRightOf="@+id/textView3"
+        android:layout_marginTop="74dp"
+        app:layout_constraintTop_toBottomOf="@+id/enteredMessage"
+        tools:layout_constraintLeft_creator="1"
+        app:layout_constraintLeft_toLeftOf="@+id/enteredMessage"
+        android:layout_marginLeft="89dp"
+        android:layout_marginRight="86dp"
+        app:layout_constraintHorizontal_bias="0.6" />
+
+
+</android.support.constraint.ConstraintLayout>

@@ -142,7 +142,6 @@
         android:visibility="gone"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:srcCompat="@drawable/sleep_bird_transparent"
         app:layout_constraintRight_toLeftOf="@+id/switchonoff"
         tools:layout_constraintTop_creator="1"
         tools:layout_constraintRight_creator="1"
