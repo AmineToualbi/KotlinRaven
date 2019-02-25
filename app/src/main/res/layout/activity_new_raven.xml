@@ -30,15 +30,17 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="5dp"
         android:text="Name of the recipient"
         android:textColor="@color/color2"
-        tools:layout_constraintBottom_creator="1"
         app:layout_constraintBottom_toTopOf="@+id/enteredName"
-        android:layout_marginStart="27dp"
-        tools:layout_constraintLeft_creator="1"
-        android:layout_marginBottom="5dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintLeft_toLeftOf="@+id/textView"
-        android:layout_marginLeft="27dp" />
+        app:layout_constraintStart_toStartOf="parent"
+        tools:layout_constraintBottom_creator="1"
+        tools:layout_constraintLeft_creator="1" />
 
     <EditText
         android:id="@+id/enteredName"
@@ -59,18 +61,20 @@
         android:layout_marginRight="8dp" />
 
     <TextView
+        android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="6dp"
         android:text="Phone number of the recipient"
         android:textColor="@color/color2"
-        android:id="@+id/textView"
-        tools:layout_constraintRight_creator="1"
-        tools:layout_constraintBottom_creator="1"
         app:layout_constraintBottom_toTopOf="@+id/enteredNumber"
-        android:layout_marginEnd="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintRight_toRightOf="@+id/textView2"
-        android:layout_marginBottom="6dp"
-        android:layout_marginRight="16dp" />
+        app:layout_constraintStart_toStartOf="parent"
+        tools:layout_constraintBottom_creator="1"
+        tools:layout_constraintRight_creator="1" />
 
     <EditText
         android:id="@+id/enteredNumber"
@@ -80,7 +84,7 @@
         android:inputType="phone"
         tools:layout_constraintRight_creator="1"
         tools:layout_constraintBottom_creator="1"
-        app:layout_constraintBottom_toTopOf="@+id/enteredLatitude"
+        app:layout_constraintBottom_toTopOf="@+id/enteredAddress"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
         app:layout_constraintRight_toRightOf="parent"
@@ -93,76 +97,65 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="GPS coordinates (Decimal Degrees)"
+        android:text="Address to send from"
         android:textColor="@color/color2"
         android:id="@+id/textView2"
         tools:layout_constraintRight_creator="1"
         tools:layout_constraintBottom_creator="1"
-        app:layout_constraintBottom_toTopOf="@+id/enteredLatitude"
+        app:layout_constraintBottom_toTopOf="@+id/enteredAddress"
         app:layout_constraintRight_toRightOf="parent"
         tools:layout_constraintLeft_creator="1"
         android:layout_marginBottom="6dp"
         app:layout_constraintLeft_toLeftOf="parent" />
 
     <EditText
-        android:id="@+id/enteredLatitude"
+        android:id="@+id/enteredAddress"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:background="@color/color5"
-        android:hint="Latitude (e.g.: 50.9)"
-        android:inputType="numberDecimal"
-        tools:layout_constraintRight_creator="1"
-        tools:layout_constraintBottom_creator="1"
-        app:layout_constraintBottom_toTopOf="@+id/enteredLongitude"
+        android:hint="Address (e.g. 1313 Mockingbird Ln)"
+        android:inputType="textPostalAddress"
+        app:layout_constraintLeft_toLeftOf="@+id/enteredNumber"
         app:layout_constraintRight_toRightOf="@+id/enteredNumber"
-        tools:layout_constraintLeft_creator="1"
-        android:layout_marginBottom="2dp"
-        app:layout_constraintLeft_toLeftOf="@+id/enteredNumber" />
-
-    <EditText
-        android:id="@+id/enteredLongitude"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="@color/color5"
-        android:hint="Longitude (e.g.: 37.3)"
-        android:inputType="numberDecimal"
-        tools:layout_constraintRight_creator="1"
         tools:layout_constraintBottom_creator="1"
-        app:layout_constraintBottom_toTopOf="@+id/enteredMessage"
-        app:layout_constraintRight_toRightOf="@+id/enteredLatitude"
         tools:layout_constraintLeft_creator="1"
-        android:layout_marginBottom="42dp"
-        app:layout_constraintLeft_toLeftOf="@+id/enteredLatitude" />
+        tools:layout_constraintRight_creator="1"
+        tools:layout_editor_absoluteY="453dp" />
 
     <TextView
+        android:id="@+id/textView3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="5dp"
         android:text="Message to the recipient"
         android:textColor="@color/color2"
-        tools:layout_constraintRight_creator="1"
-        tools:layout_constraintBottom_creator="1"
         app:layout_constraintBottom_toTopOf="@+id/enteredMessage"
-        app:layout_constraintRight_toRightOf="@+id/textView2"
-        tools:layout_constraintLeft_creator="1"
-        android:layout_marginBottom="5dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintLeft_toLeftOf="@+id/textView2"
-        android:id="@+id/textView3" />
+        app:layout_constraintRight_toRightOf="@+id/textView2"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:layout_constraintBottom_creator="1"
+        tools:layout_constraintLeft_creator="1"
+        tools:layout_constraintRight_creator="1" />
 
     <EditText
         android:id="@+id/enteredMessage"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="163dp"
         android:background="@color/color5"
         android:hint="e.g.: Just got home!"
         android:inputType="textCapSentences|textAutoCorrect"
-        tools:layout_constraintRight_creator="1"
-        tools:layout_constraintBottom_creator="1"
-        app:layout_constraintRight_toRightOf="@+id/enteredLongitude"
-        tools:layout_constraintLeft_creator="1"
-        app:layout_constraintLeft_toLeftOf="@+id/enteredLongitude"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_marginBottom="163dp"
-        app:layout_constraintHorizontal_bias="0.0" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:layout_constraintBottom_creator="1"
+        tools:layout_constraintLeft_creator="1"
+        tools:layout_constraintRight_creator="1" />
 
 
     <ImageButton
