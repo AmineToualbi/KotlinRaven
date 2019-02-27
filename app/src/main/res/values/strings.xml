@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">My Application</string>
+    <string name="app_name">Raven</string>
+    <string name="myLatitude">Latitude: + %1$f</string>
+    <string name="myLongitude">Longitude: + %1$f</string>
 </resources>
