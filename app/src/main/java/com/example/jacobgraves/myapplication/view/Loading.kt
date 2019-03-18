@@ -1,12 +1,13 @@
-package com.example.jacobgraves.myapplication
+package com.example.jacobgraves.myapplication.view
 
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.view.View
-import android.widget.ProgressBar
+import com.example.jacobgraves.myapplication.R
 import kotlinx.android.synthetic.main.activity_loading.*
+import kotlinx.android.synthetic.main.activity_new_raven.*
 
 class Loading : AppCompatActivity() {
 
