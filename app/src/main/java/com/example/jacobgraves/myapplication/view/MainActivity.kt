@@ -19,6 +19,10 @@ class MainActivity : AppCompatActivity() {
     private val requestSendSms: Int = 2
     public var ifEnableSms: Boolean = false;
 
+    companion object {          //Equivalent of public static var.
+        var ravenID: Int = 0
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
