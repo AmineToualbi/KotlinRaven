@@ -12,6 +12,11 @@ import android.support.v4.app.ActivityCompat
 import android.util.Log
 import com.example.jacobgraves.myapplication.R
 import kotlinx.android.synthetic.main.activity_main.*
+import android.widget.Toast
+import android.widget.CompoundButton
+import android.widget.Switch
+
+
 
 private var locationManager:LocationManager? = null
 
@@ -43,6 +48,19 @@ class MainActivity : AppCompatActivity() {
 
 
         }
+        //switch control
+        val toggle = findViewById (R.id.switchonoff) as Switch
+        toggle.setOnCheckedChangeListener { buttonView, isChecked ->
+            if (isChecked) {
+                Toast.makeText(applicationContext, "Switch on!", Toast.LENGTH_LONG).show()
+                addContactfab.isEnabled = true
+            } else {
+                Toast.makeText(applicationContext, "Switch off!", Toast.LENGTH_LONG).show()
+               // FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.addContactfab)
+                addContactfab.isEnabled = false
+            }
+        }
+
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.SEND_SMS), requestSendSms)
