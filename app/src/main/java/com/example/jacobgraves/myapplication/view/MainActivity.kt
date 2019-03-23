@@ -4,12 +4,15 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.location.LocationManager
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.location.*
 import android.support.v4.app.ActivityCompat
 import android.util.Log
+import android.widget.Switch
+import android.widget.Toast
 import com.example.jacobgraves.myapplication.R
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -42,6 +45,21 @@ class MainActivity : AppCompatActivity() {
             startActivity(addNewRavenIntent)
 
 
+        }
+
+        //switch control
+        switchonoff.isChecked = true
+        val toggle = findViewById<Switch>(R.id.switchonoff) as Switch
+        toggle.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                Toast.makeText(applicationContext, "App resumed!", Toast.LENGTH_LONG).show()
+                addContactfab.isEnabled = true
+                mainView.setBackgroundColor(getColor(R.color.color4))
+            } else {
+                Toast.makeText(applicationContext, "App paused!", Toast.LENGTH_LONG).show()
+                addContactfab.isEnabled = false
+                mainView.setBackgroundColor(Color.LTGRAY)
+            }
         }
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
