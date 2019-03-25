@@ -9,6 +9,7 @@ import android.location.LocationManager
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.location.*
+import android.opengl.Visibility
 import android.support.v4.app.ActivityCompat
 import android.util.Log
 import android.widget.Switch
@@ -30,6 +31,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        offsign.alpha = 0f
         //Persistent LocationManager reference
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager?
 
@@ -54,11 +56,13 @@ class MainActivity : AppCompatActivity() {
             if (isChecked) {
                 Toast.makeText(applicationContext, "App resumed!", Toast.LENGTH_LONG).show()
                 addContactfab.isEnabled = true
-                mainView.setBackgroundColor(getColor(R.color.color4))
+                mainView.alpha = 1f;
             } else {
                 Toast.makeText(applicationContext, "App paused!", Toast.LENGTH_LONG).show()
                 addContactfab.isEnabled = false
-                mainView.setBackgroundColor(Color.LTGRAY)
+                mainView.alpha = 0.5f;
+                offsign.alpha = 1f;
+
             }
         }
 

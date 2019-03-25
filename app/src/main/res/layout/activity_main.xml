@@ -8,7 +8,14 @@
     tools:context=".view.MainActivity"
     tools:layout_editor_absoluteY="25dp"
     tools:layout_editor_absoluteX="0dp"
-    android:background="@color/color4">
+    android:background="@color/color4"
+    android:alpha="1">
+
+    <ImageView
+        android:id="@+id/offsign"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@mipmap/off_img" />
 
     <Switch
         android:id="@+id/switchonoff"
