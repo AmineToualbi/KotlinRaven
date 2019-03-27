@@ -1,6 +1,8 @@
 package com.example.jacobgraves.myapplication.view
 
 import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -10,7 +12,9 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.location.*
 import android.opengl.Visibility
+import android.os.Build
 import android.support.v4.app.ActivityCompat
+import android.support.v4.app.NotificationCompat
 import android.util.Log
 import android.widget.Switch
 import android.widget.Toast
@@ -57,6 +61,7 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(applicationContext, "App resumed!", Toast.LENGTH_LONG).show()
                 addContactfab.isEnabled = true
                 mainView.alpha = 1f;
+                offsign.alpha = 0f;
             } else {
                 Toast.makeText(applicationContext, "App paused!", Toast.LENGTH_LONG).show()
                 addContactfab.isEnabled = false
@@ -65,6 +70,12 @@ class MainActivity : AppCompatActivity() {
 
             }
         }
+        //notification
+        var builder = NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.notification_icon)
+                .setContentTitle("")
+                .setContentText("Message sent")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.SEND_SMS), requestSendSms)
@@ -97,5 +108,22 @@ class MainActivity : AppCompatActivity() {
         override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
         }
 
+    }
+
+    private fun createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = getString(R.string.channel_name)
+            val descriptionText = getString(R.string.channel_description)
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
+                description = descriptionText
+            }
+            // Register the channel with the system
+            val notificationManager: NotificationManager =
+                    getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
     }
 }
