@@ -1,8 +1,11 @@
 package com.example.jacobgraves.myapplication.view
 
 import android.Manifest
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.ClipDescription
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -16,6 +19,7 @@ import android.os.Build
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.NotificationCompat
 import android.util.Log
+import android.view.View
 import android.widget.Switch
 import android.widget.Toast
 import com.example.jacobgraves.myapplication.R
@@ -26,6 +30,7 @@ private var locationManager:LocationManager? = null
 class MainActivity : AppCompatActivity() {
     private val requestSendSms: Int = 2
     public var ifEnableSms: Boolean = false;
+    private var notificationManager:NotificationManager ?= null
 
     companion object {          //Equivalent of public static var.
         var ravenID: Int = 0
@@ -62,6 +67,7 @@ class MainActivity : AppCompatActivity() {
                 addContactfab.isEnabled = true
                 mainView.alpha = 1f;
                 offsign.alpha = 0f;
+                sendNotification()
             } else {
                 Toast.makeText(applicationContext, "App paused!", Toast.LENGTH_LONG).show()
                 addContactfab.isEnabled = false
@@ -71,11 +77,10 @@ class MainActivity : AppCompatActivity() {
             }
         }
         //notification
-        var builder = NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.notification_icon)
-                .setContentTitle("")
-                .setContentText("Message sent")
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+        notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        createNotificationChannel("com.example.jacobgraves.myapplication.view","Message Status", "Check send message" )
+
+
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.SEND_SMS), requestSendSms)
@@ -110,20 +115,34 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun createNotificationChannel() {
-        // Create the NotificationChannel, but only on API 26+ because
-        // the NotificationChannel class is new and not in the support library
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = getString(R.string.channel_name)
-            val descriptionText = getString(R.string.channel_description)
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
-                description = descriptionText
-            }
-            // Register the channel with the system
-            val notificationManager: NotificationManager =
-                    getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
-        }
+    private fun createNotificationChannel(id: String, name: String, description: String) {
+        val importance = NotificationManager.IMPORTANCE_LOW
+        val channel = NotificationChannel(id, name, importance)
+        channel.description = description
+        channel.enableLights(true)
+        channel.lightColor = Color.RED
+        channel.enableVibration(true)
+        channel.vibrationPattern =
+                longArrayOf(100, 200, 300, 400, 500, 400, 300, 200, 400)
+        notificationManager?.createNotificationChannel(channel)
     }
+
+    fun sendNotification(){
+        val notificationID = 101
+        val resultIntent = Intent(this, MainActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+        val channelID = "com.example.jacobgraves.myapplication.view"
+        val notification = Notification.Builder(this, channelID)
+                .setContentTitle("Raven")
+                .setContentText("Message Sent")
+                .setSmallIcon(R.drawable.close)
+                .setContentIntent(pendingIntent)
+                .setNumber(10)
+                .build()
+        notificationManager?.notify(notificationID, notification)
+
+
+    }
+
+
 }
