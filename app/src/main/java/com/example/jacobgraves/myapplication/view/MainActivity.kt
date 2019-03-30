@@ -16,14 +16,16 @@ import android.widget.Toast
 import android.widget.CompoundButton
 import android.widget.Switch
 import com.example.jacobgraves.myapplication.view.permissions.requestPermission
+import java.security.Permission
 
 
 private var locationManager:LocationManager? = null
+private val PermissionsRequestCode = 234
+
 
 class MainActivity : AppCompatActivity() {
     private val requestSendSms: Int = 2
     public var ifEnableSms: Boolean = false;
-    private val PermissionRequestCode = 23
     private lateinit var req_permission: requestPermission
 
     companion object {          //Equivalent of public static var.
@@ -40,13 +42,15 @@ class MainActivity : AppCompatActivity() {
                 Manifest.permission.SEND_SMS
         )
 
-        req_permission = requestPermission(this,permissionList,PermissionRequestCode)
+        req_permission = requestPermission(this,permissionList,PermissionsRequestCode)
+        req_permission.checkPermissions()
 
         //Persistent LocationManager reference
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager?
 
         try {
-            req_permission.checkPermissions()
+
+            //req_permission.processPermissionsResult(PermissionRequestCode,permissionList,)
             locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000L, 10f, locationListener)
         }catch (ex: SecurityException){
             Log.d("myTag", "Security Exception, no location available")
@@ -104,5 +108,26 @@ class MainActivity : AppCompatActivity() {
         override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
         }
 
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>,
+                                            grantResults: IntArray) {
+        when (requestCode) {
+            PermissionsRequestCode ->{
+                val isPermissionsGranted = req_permission.processPermissionsResult(requestCode,permissions,grantResults)
+
+                if(isPermissionsGranted){
+                    // Do the task now
+                    toast("Permissions granted.")
+                }else{
+                    toast("Permissions denied.")
+                }
+                return
+            }
+        }
+    }
+
+    fun Context.toast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }

@@ -59,8 +59,9 @@ class requestPermission(val activity: Activity, val list: List<String>, val code
     private fun requestPermissions() {
         val permission = deniedPermission()
         if (ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)) {
+            ActivityCompat.requestPermissions(activity, list.toTypedArray(), code)
             // Show an explanation asynchronously
-            activity.toast("Should show an explanation.")
+            //activity.toast("Should show an explanation.")
         } else {
             ActivityCompat.requestPermissions(activity, list.toTypedArray(), code)
         }
