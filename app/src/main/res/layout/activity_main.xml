@@ -2,12 +2,20 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mainView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".view.MainActivity"
     tools:layout_editor_absoluteY="25dp"
     tools:layout_editor_absoluteX="0dp"
-    android:background="@color/color4">
+    android:background="@color/color4"
+    android:alpha="1">
+
+    <ImageView
+        android:id="@+id/offsign"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@mipmap/off_img" />
 
     <Switch
         android:id="@+id/switchonoff"
