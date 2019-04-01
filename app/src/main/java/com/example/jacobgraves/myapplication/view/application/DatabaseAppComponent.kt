@@ -1,5 +1,6 @@
 package com.example.jacobgraves.myapplication.view.application
 
+import com.example.jacobgraves.myapplication.view.MainActivity
 import com.example.jacobgraves.myapplication.view.NewRaven
 import com.example.jacobgraves.myapplication.view.application.dependencyModules.ProviderModule
 import dagger.Component
@@ -10,5 +11,6 @@ import javax.inject.Singleton
 interface DatabaseAppComponent {
 
     fun inject(newRavenActivity: NewRaven)
+    fun injectMain(mainActivity: MainActivity)
 
 }

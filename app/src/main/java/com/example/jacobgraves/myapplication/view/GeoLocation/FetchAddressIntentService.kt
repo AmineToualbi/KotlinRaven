@@ -14,6 +14,7 @@ import java.io.IOException
 import java.util.*
 
 class FetchAddressIntentService : IntentService("FetchAddress") {
+
     private var receiver: ResultReceiver? = null
 
     override fun onHandleIntent(intent: Intent?) {
