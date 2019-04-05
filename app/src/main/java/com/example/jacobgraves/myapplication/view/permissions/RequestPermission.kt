@@ -9,7 +9,7 @@ import android.content.Context
 import android.widget.Toast
 
 
-class requestPermission(val activity: Activity, val list: List<String>, val code:Int) {
+class RequestPermission(val activity: Activity, val list: List<String>, val code:Int) {
 
     // Check permissions at runtime
     fun checkPermissions() {

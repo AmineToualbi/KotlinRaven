@@ -1,19 +1,28 @@
 package com.example.jacobgraves.myapplication.view
 
 import android.Manifest
+import android.app.Dialog
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.util.Log
+import android.view.View
+import android.widget.Button
+import android.widget.ImageButton
+import android.widget.TextView
 import android.widget.Toast
 import com.example.jacobgraves.myapplication.R
 import com.example.jacobgraves.myapplication.view.application.DatabaseApp
 import com.example.jacobgraves.myapplication.view.model.Raven
-import com.example.jacobgraves.myapplication.view.permissions.requestPermission
+import com.example.jacobgraves.myapplication.view.permissions.RequestPermission
 import com.example.jacobgraves.myapplication.view.providers.IRavenProvider
 import com.google.gson.Gson
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_new_raven.*
+import kotlinx.android.synthetic.main.popup_delete_raven.*
 import org.json.JSONArray
 import javax.inject.Inject
 
@@ -27,10 +36,13 @@ class NewRaven : AppCompatActivity() {
     var ravenMessage: String? = null
 
     private val PermissionsRequestCode = 456
-    private lateinit var req_permission: requestPermission
+    private lateinit var req_permission: RequestPermission
 
     @Inject
     lateinit var ravenProvider: IRavenProvider
+
+    lateinit var overwritePopupDialog: Dialog
+
 
     companion object {
         val MAX_NBR_OF_RAVENS = 3
@@ -43,7 +55,11 @@ class NewRaven : AppCompatActivity() {
 
         DatabaseApp.component.inject(this)
 
+        overwritePopupDialog = Dialog(this)
+        overwritePopupDialog.findViewById<View>(R.layout.popup_delete_raven)
+
         val goBackToMainActivity: Intent = Intent(applicationContext, MainActivity::class.java)
+
 
         val permissionList = listOf<String>(
                 Manifest.permission.ACCESS_COARSE_LOCATION,
@@ -51,7 +67,7 @@ class NewRaven : AppCompatActivity() {
                 Manifest.permission.SEND_SMS
         )
 
-        req_permission = requestPermission(this,permissionList,PermissionsRequestCode)
+        req_permission = RequestPermission(this,permissionList,PermissionsRequestCode)
 
 
         validButton.setOnClickListener {
@@ -69,14 +85,30 @@ class NewRaven : AppCompatActivity() {
             }
             else {
 
-                val raven: Raven = Raven((MainActivity.ravenID++), ravenName.toString(),
-                        ravenPhoneNo.toString(), ravenMessage.toString(), ravenLongitude, ravenLatitude)
+                val ravenData = ravenProvider.getAll()
 
-                ravenProvider.save(raven)
+                //Check if 3 ravens are already stored.
+                //If not, retrieve index of last raven & add new raven right after.
+                //If 3 ravens stored, popup to ask if they want to overwrite oldest raven.
 
-                Toast.makeText(this, "Raven created.", Toast.LENGTH_SHORT).show()
+                if(checkRavenOverwrite(ravenData) == false) {
 
-                startActivity(goBackToMainActivity)
+                    var newRavenID = 0
+
+                    if(ravenData.isNotEmpty()) {
+                        newRavenID = ravenData.lastIndex + 1
+                    }
+
+                    saveRaven(newRavenID, goBackToMainActivity)
+
+                }
+
+                else {
+
+                    var overwrittenRavenID = MainActivity.ravenID%3
+                    showOverwriteRavenPopup(overwrittenRavenID, ravenData, goBackToMainActivity)
+
+                }
 
             }
 
@@ -101,6 +133,61 @@ class NewRaven : AppCompatActivity() {
                     }
                 }
             }
+
+        }
+
+    }
+
+    private fun saveRaven(newRavenID: Int, goBackToMainActivity: Intent) {
+
+        val raven: Raven = Raven(newRavenID, ravenName.toString(),
+                ravenPhoneNo.toString(), ravenMessage.toString(), ravenLongitude, ravenLatitude)
+
+        MainActivity.ravenID++
+
+        ravenProvider.save(raven)
+
+        Toast.makeText(this, "Raven created.", Toast.LENGTH_SHORT).show()
+
+        startActivity(goBackToMainActivity)
+    }
+
+    private fun checkRavenOverwrite(ravenData: List<Raven>) : Boolean {
+
+        if(ravenData.size > 2) {
+            return true
+        }
+        return false
+
+    }
+
+    private fun showOverwriteRavenPopup(overwrittenRavenID: Int, ravenData: List<Raven>, goBackToMainActivity: Intent) {
+
+        overwritePopupDialog.setContentView(R.layout.popup_delete_raven)
+
+        var transparentColor = ColorDrawable(Color.TRANSPARENT)
+        overwritePopupDialog.window.setBackgroundDrawable(transparentColor)
+        overwritePopupDialog.show()
+
+        var closePopupBtn: ImageButton = overwritePopupDialog.findViewById(R.id.closePopup)
+        var deleteBtn: Button = overwritePopupDialog.findViewById(R.id.deleteBtn)
+        deleteBtn.text = "Overwrite"
+        var popupTextView: TextView = overwritePopupDialog.findViewById(R.id.popupText)
+        popupTextView.text = "Three Ravens are already stored. Are you sure you want to override " +
+                ravenData[overwrittenRavenID].name + "'s Raven?"
+
+
+        closePopupBtn.setOnClickListener {
+
+            overwritePopupDialog.dismiss()
+
+        }
+
+        deleteBtn.setOnClickListener {
+
+            ravenProvider.delete(ravenData[overwrittenRavenID])
+
+            saveRaven(overwrittenRavenID, goBackToMainActivity)
 
         }
 

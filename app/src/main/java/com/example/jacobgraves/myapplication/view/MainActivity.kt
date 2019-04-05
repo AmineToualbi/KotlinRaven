@@ -19,10 +19,12 @@ import android.widget.Toast
 import com.example.jacobgraves.myapplication.R
 import com.example.jacobgraves.myapplication.view.application.DatabaseApp
 import kotlinx.android.synthetic.main.activity_main.*
-import com.example.jacobgraves.myapplication.view.permissions.requestPermission
+import com.example.jacobgraves.myapplication.view.permissions.RequestPermission
 import com.example.jacobgraves.myapplication.view.providers.IRavenProvider
+import com.google.gson.Gson
 import kotlinx.android.synthetic.main.popup_delete_raven.view.*
 import org.json.JSONArray
+import javax.inject.Inject
 
 
 private var locationManager:LocationManager? = null
@@ -34,7 +36,7 @@ class MainActivity : AppCompatActivity() {
     private val requestSendSms: Int = 2
     public var ifEnableSms: Boolean = false
 
-    private lateinit var req_permission: requestPermission
+    private lateinit var req_permission: RequestPermission
 
     private var notificationManager:NotificationManager ?= null
 
@@ -64,7 +66,7 @@ class MainActivity : AppCompatActivity() {
                 Manifest.permission.SEND_SMS
         )
 
-        req_permission = requestPermission(this, permissionList, PermissionsRequestCode)
+        req_permission = RequestPermission(this, permissionList, PermissionsRequestCode)
         req_permission.checkPermissions()
 
 
@@ -95,6 +97,7 @@ class MainActivity : AppCompatActivity() {
             if (isChecked) {
                 Toast.makeText(applicationContext, "Switch on!", Toast.LENGTH_LONG).show()
                 addContactfab.isEnabled = true
+                this.deleteDatabase("RavenDB.db")
             } else {
                 Toast.makeText(applicationContext, "Switch off!", Toast.LENGTH_LONG).show()
                 // FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.addContactfab)
@@ -187,7 +190,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateUI() {
 
-        val ravenData = ravenPovider.getAll()
+        val ravenData = ravenProvider.getAll()
 
         var jsonData = Gson().toJson(ravenData)
         var jsonArray = JSONArray(jsonData)
