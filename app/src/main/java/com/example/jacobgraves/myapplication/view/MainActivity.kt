@@ -92,16 +92,22 @@ class MainActivity : AppCompatActivity() {
         }
 
         //switch control
-        val toggle = findViewById(R.id.switchonoff) as Switch
+        var toggle = findViewById(R.id.switchonoff) as Switch
+        toggle.isChecked = true
         toggle.setOnCheckedChangeListener { buttonView, isChecked ->
+
             if (isChecked) {
-                Toast.makeText(applicationContext, "Switch on!", Toast.LENGTH_LONG).show()
-                addContactfab.isEnabled = true
+
+                Toast.makeText(applicationContext, "App turned on!", Toast.LENGTH_LONG).show()
                 this.deleteDatabase("RavenDB.db")
-            } else {
-                Toast.makeText(applicationContext, "Switch off!", Toast.LENGTH_LONG).show()
+                turnScreenOn()
+
+            }
+            else {
+
+                Toast.makeText(applicationContext, "App turned off!", Toast.LENGTH_LONG).show()
                 // FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.addContactfab)
-                addContactfab.isEnabled = false
+                turnScreenOff()
             }
         }
 
@@ -116,6 +122,50 @@ class MainActivity : AppCompatActivity() {
         editRaven3.setOnClickListener {
             showDeleteRavenPopup(2)
         }
+
+    }
+
+    private fun turnScreenOff() {
+
+        addContactfab.isEnabled = false
+        offsign.alpha = 1f
+        editRaven.isClickable = false
+        editRaven2.isClickable = false
+        editRaven2.isClickable = false
+        ravenImage.alpha = .3f
+        currentName.alpha = .3f
+        currentName2.alpha = .3f
+        currentName3.alpha = .3f
+        currentAddress.alpha = .3f
+        myLongitude.alpha = .3f
+        myLatitude.alpha = .3f
+        addContactfab.alpha = .3f
+        editRaven.alpha = .3f
+        editRaven2.alpha = .3f
+        editRaven3.alpha = .3f
+        ravenDestination.alpha = .3f
+
+    }
+
+    private fun turnScreenOn() {
+
+        addContactfab.isEnabled = true
+        offsign.alpha = 0f
+        editRaven.isClickable = true
+        editRaven2.isClickable = true
+        editRaven2.isClickable = true
+        ravenImage.alpha = 1f
+        currentName.alpha = 1f
+        currentName2.alpha = 1f
+        currentName3.alpha = 1f
+        currentAddress.alpha = 1f
+        myLongitude.alpha = 1f
+        myLatitude.alpha = 1f
+        addContactfab.alpha = 1f
+        editRaven.alpha = 1f
+        editRaven2.alpha = 1f
+        editRaven3.alpha = 1f
+        ravenDestination.alpha = 1f
 
     }
 
