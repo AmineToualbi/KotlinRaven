@@ -83,28 +83,25 @@ class NewRaven : AppCompatActivity() {
             if(isValid(ravenName, ravenPhoneNo, ravenAddress, ravenMessage) == false) {
                 Toast.makeText(this, "Please fill all the field.", Toast.LENGTH_LONG).show()
             }
+
             else {
 
                 val ravenData = ravenProvider.getAll()
 
-                //Check if 3 ravens are already stored.
-                //If not, retrieve index of last raven & add new raven right after.
-                //If 3 ravens stored, popup to ask if they want to overwrite oldest raven.
-
+                //Check if 3 ravens are already stored. False => No, we have less than 3 stored.
                 if(checkRavenOverwrite(ravenData) == false) {
 
-                    var newRavenID = 0
+                    //Get correct ID for new Raven in DB.
+                    var newRavenID = updatedRavenID(ravenData)
 
-                    if(ravenData.isNotEmpty()) {
-                        newRavenID = ravenData.lastIndex + 1
-                    }
-
+                    //Save Raven with correct ID.
                     saveRaven(newRavenID, goBackToMainActivity)
 
                 }
 
                 else {
 
+                    //Overwrite oldest Raven.
                     var overwrittenRavenID = MainActivity.ravenID%3
                     showOverwriteRavenPopup(overwrittenRavenID, ravenData, goBackToMainActivity)
 
@@ -138,6 +135,48 @@ class NewRaven : AppCompatActivity() {
 
     }
 
+
+    //Function to get correct Raven ID for new object to be saved in the Database.
+    private fun updatedRavenID(ravenData: List<Raven>) : Int {
+
+        var updatedRavenID : Int = 0
+        var currentRavenIDs : Array<Int?> = arrayOfNulls(3)
+        var arrayIndexCount : Int = 0
+
+        //If there's only 1 Raven stored -> add the Raven right after.
+        if(ravenData.size == 1) {
+            updatedRavenID = ravenData.lastIndex + 1
+            return updatedRavenID
+        }
+
+        //If 2 ravens are stored, check the ordering of the IDs.
+        //Iterate through the 2 ravens & retrieve their IDs in currentRavenIDs.
+        for(ravenIndex in 0..(ravenData.size-1)) {
+            currentRavenIDs[arrayIndexCount] = ravenData[ravenIndex].id
+            Log.d("CurrentRavenIDs", "Logging in ID " + ravenIndex + " @ " + arrayIndexCount)
+            arrayIndexCount++
+        }
+
+        for(i in 0..(currentRavenIDs.size-1)) {
+            Log.d("CurrentRavenIDs", "Raven ID = " + currentRavenIDs[i])
+        }
+
+        //Get correct ID.
+        if(currentRavenIDs[0] == 0 && currentRavenIDs[1] == 1) {
+            updatedRavenID = 2
+        }
+        else if(currentRavenIDs[0] == 0 && currentRavenIDs[1] == 2) {
+            updatedRavenID = 1
+        }
+        else if(currentRavenIDs[0] == 1 && currentRavenIDs[1] == 2) {
+            updatedRavenID = 0
+        }
+
+        return updatedRavenID
+
+    }
+
+
     private fun saveRaven(newRavenID: Int, goBackToMainActivity: Intent) {
 
         val raven: Raven = Raven(newRavenID, ravenName.toString(),
@@ -152,6 +191,7 @@ class NewRaven : AppCompatActivity() {
         startActivity(goBackToMainActivity)
     }
 
+
     private fun checkRavenOverwrite(ravenData: List<Raven>) : Boolean {
 
         if(ravenData.size > 2) {
@@ -160,6 +200,7 @@ class NewRaven : AppCompatActivity() {
         return false
 
     }
+
 
     private fun showOverwriteRavenPopup(overwrittenRavenID: Int, ravenData: List<Raven>, goBackToMainActivity: Intent) {
 
