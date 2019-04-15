@@ -6,13 +6,14 @@ import android.content.*
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.location.LocationListener
 import android.location.LocationManager
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.location.*
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
 import android.net.Uri
+import android.os.IBinder
 import android.provider.Settings
 import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
@@ -25,7 +26,7 @@ import android.widget.Switch
 import android.widget.Toast
 import com.example.jacobgraves.myapplication.BuildConfig
 import com.example.jacobgraves.myapplication.R
-import com.example.jacobgraves.myapplication.view.GPSUtils.LocationMonitoringService
+import com.example.jacobgraves.myapplication.view.GPSUtils.BackgroundService
 import com.example.jacobgraves.myapplication.view.application.DatabaseApp
 import kotlinx.android.synthetic.main.activity_main.*
 import com.example.jacobgraves.myapplication.view.permissions.RequestPermission
@@ -33,7 +34,7 @@ import com.example.jacobgraves.myapplication.view.providers.IRavenProvider
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.gson.Gson
-import kotlinx.android.synthetic.main.popup_delete_raven.view.*
+import com.karumi.dexter.Dexter
 import org.json.JSONArray
 import javax.inject.Inject
 
@@ -60,9 +61,12 @@ class MainActivity : AppCompatActivity() {
 
     lateinit var deletePopupDialog: Dialog
 
-    val TAG = "MainActivity"
+    val TAG = "PrimaryLog"
 
-    var mAlreadyStartedService : Boolean = false
+    var gpsService: BackgroundService? = null
+    var mTracking : Boolean = false
+    var connectionEstablished : Boolean = false
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -70,21 +74,9 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
       //  notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-                object:BroadcastReceiver() {
-                    override fun onReceive(context:Context, intent:Intent) {
-                        val latitude = intent.getStringExtra(LocationMonitoringService.EXTRA_LATITUDE)
-                        val longitude = intent.getStringExtra(LocationMonitoringService.EXTRA_LONGITUDE)
-
-                        if (latitude != null && longitude != null)
-                        {
-                            myLongitude!!.text = "Latitude : " + latitude + "\n Longitude: " + longitude
-                        }
-                    }
-                }, IntentFilter(LocationMonitoringService.ACTION_LOCATION_BROADCAST)
-        )
-
-
+        val serviceIntent = Intent(this, BackgroundService::class.java)
+        this.startService(serviceIntent)
+        this.bindService(serviceIntent, myConnection, Context.BIND_AUTO_CREATE)
 
 
 
@@ -129,13 +121,16 @@ class MainActivity : AppCompatActivity() {
         //switch control
         var toggle = findViewById(R.id.switchonoff) as Switch
         toggle.isChecked = true
-        toggle.setOnCheckedChangeListener { buttonView, isChecked ->
+
+        toggle.setOnCheckedChangeListener() { buttonView, isChecked ->
 
             if (isChecked) {
 
                 Toast.makeText(applicationContext, "App turned on!", Toast.LENGTH_LONG).show()
                 this.deleteDatabase("RavenDB.db")
                 turnScreenOn()
+                gpsService!!.startTracking()
+                mTracking = true
 
             }
             else {
@@ -161,7 +156,33 @@ class MainActivity : AppCompatActivity() {
             showDeleteRavenPopup(2)
         }
 
+        if(toggle.isChecked == true && connectionEstablished == true) {
+            gpsService!!.startTracking()
+            mTracking = true
+        }
+
     }
+
+    private val myConnection = object : ServiceConnection {
+
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            var name = name!!.className
+            if(name.endsWith("BackgroundService")) {
+                val binder = service as BackgroundService.LocationServiceBinder
+                gpsService = binder.getService()
+                Log.i(TAG, "GPS READY.")
+                connectionEstablished = true
+            }
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            if(name!!.className.equals("BackgroundService")) {
+                gpsService = null
+            }
+        }
+
+    }
+
 
     private fun turnScreenOff() {
 
@@ -240,187 +261,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun startStep1() {
 
-        if(isGooglePlayServicesAvailable()) {
-            startStep2(null)
-        }
-        else {
-            Toast.makeText(this, "No Google Play Services Available", Toast.LENGTH_LONG).show()
-        }
-
-    }
-
-    private fun startStep2 (dialog: DialogInterface?) : Boolean {
-
-        //As is the same as (ConnectivityManager) cast.
-        var connectivityManager : ConnectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        var activeNetworkInfo: NetworkInfo = connectivityManager.activeNetworkInfo
-
-        if(activeNetworkInfo == null || !activeNetworkInfo.isConnected) {
-            promptInternetConnect()
-            return false
-        }
-
-        if(dialog != null) {
-            dialog.dismiss()
-        }
-
-        if(checkPermissions()) {
-            startStep3()
-        }
-        else{
-            requestPermissions()
-        }
-        return true
-
-    }
-
-    private fun promptInternetConnect() {
-
-        var builder : AlertDialog.Builder = AlertDialog.Builder(this)
-        builder.setTitle("No internet")
-        builder.setMessage("There's no internet.")
-
-        var positiveText = "Refresh"
-
-        builder.setPositiveButton(positiveText) { dialog, which ->
-
-            if(startStep2(dialog)){
-                if(checkPermissions()){
-                    startStep3()
-                }
-                else if(!checkPermissions()) {
-                    requestPermissions()
-                }
-            }
-        }
-
-        var dialog : AlertDialog = builder.create()
-        dialog.show()
-
-    }
-
-    private fun startStep3() {
-
-        if(!mAlreadyStartedService && myLatitude != null) {
-            myLatitude.text = "Location service started"
-            //createNotificationChannel("com.example.jacobgraves.myapplication.view", "Message Status", "Service started.")
-           // sendNotification()
-
-
-            var intent : Intent = Intent(this, LocationMonitoringService::class.java)
-            startService(intent)
-            mAlreadyStartedService = true
-        }
-
-    }
-
-     fun isGooglePlayServicesAvailable() : Boolean {
-
-        var googleApiAvailability = GoogleApiAvailability.getInstance()
-        var status : Int = googleApiAvailability.isGooglePlayServicesAvailable(this)
-
-        if(status != ConnectionResult.SUCCESS) {
-            if(googleApiAvailability.isUserResolvableError(status)) {
-                googleApiAvailability.getErrorDialog(this, status, 2404).show()
-            }
-            return false
-        }
-        return true
-
-    }
-
-    private fun checkPermissions() : Boolean {
-
-        var permissionState1 : Int = ActivityCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION)
-
-        var permissionState2 : Int = ActivityCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_COARSE_LOCATION)
-
-        return permissionState1 == PackageManager.PERMISSION_GRANTED &&
-                permissionState2 == PackageManager.PERMISSION_GRANTED
-    }
-
-    private fun requestPermissions() {
-
-        var shouldProvideRationale : Boolean = ActivityCompat.shouldShowRequestPermissionRationale(this,
-                Manifest.permission.ACCESS_FINE_LOCATION)
-        var shouldProvideRationale2 : Boolean = ActivityCompat.shouldShowRequestPermissionRationale(this,
-                Manifest.permission.ACCESS_COARSE_LOCATION)
-
-        if(shouldProvideRationale || shouldProvideRationale2) {
-            Log.i(TAG, "Displaying permission rationale to provide add. context")
-            showSnackbar("Permissions", "OK", View.OnClickListener {
-
-                val permissionList = arrayOf<String>(
-                        Manifest.permission.ACCESS_COARSE_LOCATION,
-                        Manifest.permission.ACCESS_FINE_LOCATION
-                )
-                ActivityCompat.requestPermissions(this, permissionList,
-                        34)
-            })
-        }
-        else {
-            Log.i(TAG, "Requesting permission")
-
-            val permissionList = arrayOf<String>(
-                    Manifest.permission.ACCESS_COARSE_LOCATION,
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                    )
-
-            ActivityCompat.requestPermissions(this, permissionList, 34 )
-
-        }
-
-    }
-
-    private fun showSnackbar(mainTextStringID: String, actionStringID: String,
-                             listener : View.OnClickListener) {
-
-        Snackbar.make(mainView, mainTextStringID, Snackbar.LENGTH_INDEFINITE)
-                .setAction(actionStringID, listener).show()
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>,
-                                            grantResults: IntArray) {
-
-        Log.i(TAG, "onRequestPermissionResult")
-         if(requestCode == 34) {
-             if(grantResults.size <= 0) {
-                 Log.i(TAG, "User interaction was cancelled")
-             }
-             else if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                 Log.i(TAG, "Permission granted, updates requested, starting loc updates")
-                 startStep3()
-             }
-             else {
-                 showSnackbar("Permission denied", "Go to settings",
-                         View.OnClickListener {
-
-                             var intent: Intent = Intent()
-                             intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                             var uri : Uri = Uri.fromParts("package", BuildConfig.APPLICATION_ID, null)
-                             intent.setData(uri)
-
-                             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                             startActivity(intent)
-
-                         })
-             }
-         }
-
-    }
-
-    override fun onDestroy() {
-        var intent : Intent = Intent(this, LocationMonitoringService.javaClass)
-        stopService(intent)
-        mAlreadyStartedService = false
-
-        super.onDestroy()
-
-    }
 
     /*private val locationListener:LocationListener = object:LocationListener {
 
@@ -441,7 +282,7 @@ class MainActivity : AppCompatActivity() {
     }*/
 
 
-  /*  override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>,
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>,
                                             grantResults: IntArray) {
         when (requestCode) {
             PermissionsRequestCode ->{
@@ -449,14 +290,17 @@ class MainActivity : AppCompatActivity() {
 
                 if(isPermissionsGranted){
                     // Do the task now
-                    toast("Permissions granted.")
+                    //toast("Permissions granted.")
+                    gpsService!!.startTracking()
+                    mTracking = true
+                    toast("Start Tracking")
                 }else{
                     toast("Permissions denied.")
                 }
                 return
             }
         }
-    }*/
+    }
 
     private fun updateUI() {
 
@@ -491,11 +335,13 @@ class MainActivity : AppCompatActivity() {
             currentName3.text = "No Raven"
         }
 
+      //  myLongitude.text = com.example.jacobgraves.myapplication.view.GPSUtils.LocationListener.longitude.toString() + "\n" +
+                //com.example.jacobgraves.myapplication.view.GPSUtils.LocationListener.latitude.toString()
+
     }
 
     override fun onResume() {
         super.onResume()
-        startStep1()
         updateUI()
     }
 

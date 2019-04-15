@@ -6,6 +6,8 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.SEND_SMS"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 
     <application
         android:name=".view.application.DatabaseApp"
@@ -15,10 +17,6 @@
         android:roundIcon="@drawable/ravenlogo"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <service
-            android:name=".FetchAddressIntentService"
-            android:exported="false"
-            />
         <activity android:name=".view.Loading">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -30,7 +28,7 @@
         <activity android:name=".view.MainActivity">
         </activity>
         <activity android:name=".view.NewRaven"/>
-        <service android:name=".view.GPSUtils.LocationMonitoringService"/>
+        <service android:name=".view.GPSUtils.BackgroundService"/>
     </application>
 
 </manifest>
