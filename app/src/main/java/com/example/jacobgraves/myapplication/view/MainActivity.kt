@@ -2,27 +2,39 @@ package com.example.jacobgraves.myapplication.view
 
 import android.Manifest
 import android.app.*
-import android.content.Context
-import android.content.Intent
+import android.content.*
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.location.LocationListener
 import android.location.LocationManager
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.location.*
+import android.net.ConnectivityManager
+import android.net.NetworkInfo
+import android.net.Uri
+import android.os.IBinder
+import android.provider.Settings
+import android.support.design.widget.Snackbar
+import android.support.v4.app.ActivityCompat
+import android.support.v4.content.LocalBroadcastManager
 import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.Switch
 import android.widget.Toast
+import com.example.jacobgraves.myapplication.BuildConfig
 import com.example.jacobgraves.myapplication.R
+import com.example.jacobgraves.myapplication.view.GPSUtils.BackgroundService
 import com.example.jacobgraves.myapplication.view.application.DatabaseApp
 import kotlinx.android.synthetic.main.activity_main.*
 import com.example.jacobgraves.myapplication.view.permissions.RequestPermission
 import com.example.jacobgraves.myapplication.view.providers.IRavenProvider
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
 import com.google.gson.Gson
-import kotlinx.android.synthetic.main.popup_delete_raven.view.*
+import com.karumi.dexter.Dexter
 import org.json.JSONArray
 import javax.inject.Inject
 
@@ -49,10 +61,25 @@ class MainActivity : AppCompatActivity() {
 
     lateinit var deletePopupDialog: Dialog
 
+    val TAG = "PrimaryLog"
+
+    var gpsService: BackgroundService? = null
+    var mTracking : Boolean = false
+    var connectionEstablished : Boolean = false
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+      //  notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        val serviceIntent = Intent(this, BackgroundService::class.java)
+        this.startService(serviceIntent)
+        this.bindService(serviceIntent, myConnection, Context.BIND_AUTO_CREATE)
+
+
+
 
         deletePopupDialog = Dialog(this)
         deletePopupDialog.findViewById<View>(R.layout.popup_delete_raven)
@@ -73,15 +100,15 @@ class MainActivity : AppCompatActivity() {
         offsign.alpha = 0f
 
         //Persistent LocationManager reference
-        locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager?
+        //locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager?
 
-        try {
+       /* try {
 
             //req_permission.processPermissionsResult(PermissionRequestCode,permissionList,)
             locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000L, 10f, locationListener)
         } catch (ex: SecurityException) {
             Log.d("myTag", "Security Exception, no location available")
-        }
+        }*/
 
         addContactfab.setOnClickListener {
 
@@ -94,13 +121,16 @@ class MainActivity : AppCompatActivity() {
         //switch control
         var toggle = findViewById(R.id.switchonoff) as Switch
         toggle.isChecked = true
-        toggle.setOnCheckedChangeListener { buttonView, isChecked ->
+
+        toggle.setOnCheckedChangeListener() { buttonView, isChecked ->
 
             if (isChecked) {
 
                 Toast.makeText(applicationContext, "App turned on!", Toast.LENGTH_LONG).show()
                 this.deleteDatabase("RavenDB.db")
                 turnScreenOn()
+                gpsService!!.startTracking()
+                mTracking = true
 
             }
             else {
@@ -108,8 +138,11 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(applicationContext, "App turned off!", Toast.LENGTH_LONG).show()
                 // FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.addContactfab)
                 turnScreenOff()
+
             }
         }
+
+
 
         editRaven.setOnClickListener {
             showDeleteRavenPopup(0)
@@ -123,7 +156,33 @@ class MainActivity : AppCompatActivity() {
             showDeleteRavenPopup(2)
         }
 
+        if(toggle.isChecked == true && connectionEstablished == true) {
+            gpsService!!.startTracking()
+            mTracking = true
+        }
+
     }
+
+    private val myConnection = object : ServiceConnection {
+
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            var name = name!!.className
+            if(name.endsWith("BackgroundService")) {
+                val binder = service as BackgroundService.LocationServiceBinder
+                gpsService = binder.getService()
+                Log.i(TAG, "GPS READY.")
+                connectionEstablished = true
+            }
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            if(name!!.className.equals("BackgroundService")) {
+                gpsService = null
+            }
+        }
+
+    }
+
 
     private fun turnScreenOff() {
 
@@ -202,7 +261,9 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private val locationListener:LocationListener = object:LocationListener {
+
+
+    /*private val locationListener:LocationListener = object:LocationListener {
 
         override fun onLocationChanged(location:Location){
             myLongitude.text = getString(R.string.myLatitude, location.longitude)
@@ -218,7 +279,7 @@ class MainActivity : AppCompatActivity() {
         override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
         }
 
-    }
+    }*/
 
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>,
@@ -229,7 +290,10 @@ class MainActivity : AppCompatActivity() {
 
                 if(isPermissionsGranted){
                     // Do the task now
-                    toast("Permissions granted.")
+                    //toast("Permissions granted.")
+                    gpsService!!.startTracking()
+                    mTracking = true
+                    toast("Start Tracking")
                 }else{
                     toast("Permissions denied.")
                 }
@@ -271,6 +335,9 @@ class MainActivity : AppCompatActivity() {
             currentName3.text = "No Raven"
         }
 
+      //  myLongitude.text = com.example.jacobgraves.myapplication.view.GPSUtils.LocationListener.longitude.toString() + "\n" +
+                //com.example.jacobgraves.myapplication.view.GPSUtils.LocationListener.latitude.toString()
+
     }
 
     override fun onResume() {
@@ -278,11 +345,12 @@ class MainActivity : AppCompatActivity() {
         updateUI()
     }
 
+
     fun Context.toast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
-    private fun createNotificationChannel(id: String, name: String, description: String) {
+   /* private fun createNotificationChannel(id: String, name: String, description: String) {
         val importance = NotificationManager.IMPORTANCE_LOW
         val channel = NotificationChannel(id, name, importance)
         channel.description = description
@@ -292,9 +360,9 @@ class MainActivity : AppCompatActivity() {
         channel.vibrationPattern =
                 longArrayOf(100, 200, 300, 400, 500, 400, 300, 200, 400)
         notificationManager?.createNotificationChannel(channel)
-    }
+    }*/
 
-    fun sendNotification(){
+    /*fun sendNotification(){
         val notificationID = 101
         val resultIntent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT)
@@ -309,7 +377,7 @@ class MainActivity : AppCompatActivity() {
         notificationManager?.notify(notificationID, notification)
 
 
-    }
+    }*/
 
 
 
