@@ -46,6 +46,7 @@ class NewRaven : AppCompatActivity() {
 
     companion object {
         val MAX_NBR_OF_RAVENS = 3
+        var appRunning = false
     }
 
 
@@ -132,6 +133,8 @@ class NewRaven : AppCompatActivity() {
             }
 
         }
+
+        appRunning = true
 
     }
 

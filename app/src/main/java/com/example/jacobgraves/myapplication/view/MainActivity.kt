@@ -70,7 +70,6 @@ class MainActivity : AppCompatActivity() {
     var mTracking : Boolean = false
     var connectionEstablished : Boolean = false
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -82,6 +81,7 @@ class MainActivity : AppCompatActivity() {
         this.bindService(serviceIntent, myConnection, Context.BIND_AUTO_CREATE)
 
 
+        Log.i(TAG, "ONCREATE")
 
 
         deletePopupDialog = Dialog(this)
@@ -123,8 +123,15 @@ class MainActivity : AppCompatActivity() {
 
         //switch control
         var toggle = findViewById(R.id.switchonoff) as Switch
-        toggle.isChecked = false
-        turnScreenOff()
+
+        if(NewRaven.appRunning == null || NewRaven.appRunning == false) {
+            toggle.isChecked = false
+            turnScreenOff()
+        }
+        else if(NewRaven.appRunning == true) {
+            toggle.isChecked = true
+            turnScreenOn()
+        }
 
         toggle.setOnCheckedChangeListener() { buttonView, isChecked ->
 
@@ -332,6 +339,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         updateUI()
+        Log.i(TAG, "ONRESUME")
     }
 
 
