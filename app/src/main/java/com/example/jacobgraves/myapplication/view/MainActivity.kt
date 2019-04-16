@@ -37,6 +37,7 @@ import com.google.gson.Gson
 import com.karumi.dexter.Dexter
 import org.json.JSONArray
 import javax.inject.Inject
+import kotlin.concurrent.fixedRateTimer
 
 
 private var locationManager:LocationManager? = null
@@ -57,6 +58,8 @@ class MainActivity : AppCompatActivity() {
 
     companion object {          //Equivalent of public static var.
         var ravenID: Int = 0
+        var currentLongitude : Double? = null
+        var currentLatitude : Double? = null
     }
 
     lateinit var deletePopupDialog: Dialog
@@ -120,14 +123,14 @@ class MainActivity : AppCompatActivity() {
 
         //switch control
         var toggle = findViewById(R.id.switchonoff) as Switch
-        toggle.isChecked = true
+        toggle.isChecked = false
+        turnScreenOff()
 
         toggle.setOnCheckedChangeListener() { buttonView, isChecked ->
 
             if (isChecked) {
 
                 Toast.makeText(applicationContext, "App turned on!", Toast.LENGTH_LONG).show()
-                this.deleteDatabase("RavenDB.db")
                 turnScreenOn()
                 gpsService!!.startTracking()
                 mTracking = true
@@ -136,8 +139,9 @@ class MainActivity : AppCompatActivity() {
             else {
 
                 Toast.makeText(applicationContext, "App turned off!", Toast.LENGTH_LONG).show()
-                // FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.addContactfab)
                 turnScreenOff()
+                gpsService!!.stopTracking()
+                mTracking = false
 
             }
         }
@@ -156,9 +160,14 @@ class MainActivity : AppCompatActivity() {
             showDeleteRavenPopup(2)
         }
 
-        if(toggle.isChecked == true && connectionEstablished == true) {
-            gpsService!!.startTracking()
-            mTracking = true
+        //To continuously updateUI every 10s.
+        fixedRateTimer("timer",false,0,10000){
+            this@MainActivity.runOnUiThread {
+                if(mTracking == true) {
+                    updateUI()
+                    Log.i(TAG, "UPDATEUI")
+                }
+            }
         }
 
     }
@@ -262,26 +271,6 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-
-    /*private val locationListener:LocationListener = object:LocationListener {
-
-        override fun onLocationChanged(location:Location){
-            myLongitude.text = getString(R.string.myLatitude, location.longitude)
-            myLatitude.text = getString(R.string.myLatitude, location.latitude)
-        }
-
-        override fun onProviderEnabled(provider: String?) {
-        }
-
-        override fun onProviderDisabled(provider: String?) {
-        }
-
-        override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
-        }
-
-    }*/
-
-
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>,
                                             grantResults: IntArray) {
         when (requestCode) {
@@ -335,8 +324,8 @@ class MainActivity : AppCompatActivity() {
             currentName3.text = "No Raven"
         }
 
-      //  myLongitude.text = com.example.jacobgraves.myapplication.view.GPSUtils.LocationListener.longitude.toString() + "\n" +
-                //com.example.jacobgraves.myapplication.view.GPSUtils.LocationListener.latitude.toString()
+        myLongitude.text = "Longitude: " + roundCoordinates(currentLongitude) + "°"
+        myLatitude.text = "Longitude: " + roundCoordinates(currentLatitude) + "°"
 
     }
 
@@ -350,7 +339,21 @@ class MainActivity : AppCompatActivity() {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
-   /* private fun createNotificationChannel(id: String, name: String, description: String) {
+    fun roundCoordinates(coordinate: Double?): Double {    //function to round to 2 decimal places our GPS coordinates.
+
+        val result = String.format("%.2f", coordinate)
+        var roundedValue = 0.0
+        try {
+            roundedValue = java.lang.Double.parseDouble(result)
+        } catch (ex: NumberFormatException) {
+        }
+
+        return roundedValue
+
+    }
+
+
+    /* private fun createNotificationChannel(id: String, name: String, description: String) {
         val importance = NotificationManager.IMPORTANCE_LOW
         val channel = NotificationChannel(id, name, importance)
         channel.description = description

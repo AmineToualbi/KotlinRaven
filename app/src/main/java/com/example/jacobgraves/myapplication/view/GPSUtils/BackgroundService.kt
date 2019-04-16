@@ -21,6 +21,7 @@ import android.R
 import android.graphics.Color
 import android.os.Build
 import android.support.annotation.RequiresApi
+import com.example.jacobgraves.myapplication.view.MainActivity
 
 
 class BackgroundService : Service() {
@@ -51,8 +52,8 @@ class BackgroundService : Service() {
         override fun onLocationChanged(location: Location?) {
             mLastLocation = location!!
             Log.i(TAG, "LocationChanged " + location)
-          //  longitude = location!!.longitude
-           // latitude = location!!.latitude
+            MainActivity.currentLongitude = location.longitude
+            MainActivity.currentLatitude = location.latitude
         }
 
         override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
@@ -147,24 +148,16 @@ class BackgroundService : Service() {
         var notifBuilder =  NotificationCompat.Builder(this, "channel_01")
 
         var mBuilder = notifBuilder.setOngoing(true)
-                .setSmallIcon(R.drawable.ic_lock_idle_alarm)
+                .setSmallIcon(R.drawable.ic_menu_mylocation)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setCategory(Notification.CATEGORY_SERVICE)
+                .setContentTitle("Raven")
+                .setContentText("Raven is currently using your location.")
 
         return mBuilder.build()
 
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun createNotificationChannel(channelId: String, channelName: String): String{
-        val chan = NotificationChannel(channelId,
-                channelName, NotificationManager.IMPORTANCE_NONE)
-        chan.lightColor = Color.BLUE
-        chan.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
-        val service = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        service.createNotificationChannel(chan)
-        return channelId
-    }
 
     inner class LocationServiceBinder : Binder() {
         fun getService() : BackgroundService {
