@@ -21,8 +21,10 @@ import android.R
 import android.graphics.Color
 import android.os.Build
 import android.support.annotation.RequiresApi
-import com.example.jacobgraves.myapplication.view.MainActivity
+import android.telephony.SmsManager
 import com.example.jacobgraves.myapplication.view.SMSUtils.SMSManager
+import android.app.PendingIntent
+import com.example.jacobgraves.myapplication.view.MainActivity
 
 
 class BackgroundService : Service() {
@@ -32,7 +34,7 @@ class BackgroundService : Service() {
     var mLocationListener : LocationListener? = null
     var mLocationManager : LocationManager? = null
     var notificationManager : NotificationManager? = null
-    var smsManager: SMSManager? = null
+    var smsManager = SMSManager()
 
     val LOCATION_INTERVAL : Long = 1000
     val LOCATION_DISTANCE : Float = 10f
@@ -56,6 +58,26 @@ class BackgroundService : Service() {
             Log.i(TAG, "LocationChanged " + location)
             MainActivity.currentLongitude = location.longitude
             MainActivity.currentLatitude = location.latitude
+
+            for(i in 0 .. (MainActivity.ravenArray.size-1)) {
+
+                //MaxValue is used as a placeholder notifying empty ravens.
+                if(MainActivity.ravenArray[i].id != Int.MAX_VALUE) {
+
+                    if(location.longitude == MainActivity.ravenArray[i].longitude
+                    && location.latitude == MainActivity.ravenArray[i].latitude) {
+
+
+                        val intent = Intent(applicationContext, BackgroundService::class.java)
+                        val pi = PendingIntent.getActivity(applicationContext, 0, intent, 0)
+
+                        Log.i(TAG, "SENDMSG TO " + MainActivity.ravenArray[i].phoneNo)
+                        smsManager.sendSMS(MainActivity.ravenArray[i].phoneNo,
+                                MainActivity.ravenArray[i].message, pi)
+
+                    }
+                }
+            }
         }
 
         override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {

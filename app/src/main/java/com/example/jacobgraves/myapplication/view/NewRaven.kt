@@ -31,8 +31,8 @@ class NewRaven : AppCompatActivity() {
     var ravenName: String? = null
     var ravenPhoneNo: String? = null
     var ravenAddress: String? = null
-    var ravenLongitude: Double = 0.0
-    var ravenLatitude: Double = 0.0
+    var ravenLongitude: Double = 112.00
+    var ravenLatitude: Double = 22.00
     var ravenMessage: String? = null
 
     private val PermissionsRequestCode = 456

@@ -18,6 +18,7 @@ import android.provider.Settings
 import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.LocalBroadcastManager
+import android.telephony.SmsManager
 import android.util.Log
 import android.view.View
 import android.widget.Button
@@ -63,7 +64,7 @@ class MainActivity : AppCompatActivity() {
         var currentLatitude: Double? = null
         val emptyRaven = Raven(Int.MAX_VALUE, "0", "0", "0", 0.0, 0.0)
         var ravenArray: Array<Raven> = arrayOf<Raven>(emptyRaven, emptyRaven, emptyRaven)
-
+        var mTracking = false
     }
 
     lateinit var deletePopupDialog: Dialog
@@ -71,7 +72,6 @@ class MainActivity : AppCompatActivity() {
     val TAG = "PrimaryLog"
 
     var gpsService: BackgroundService? = null
-    var mTracking: Boolean = false
     var connectionEstablished: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -105,17 +105,6 @@ class MainActivity : AppCompatActivity() {
 
 
         offsign.alpha = 0f
-
-        //Persistent LocationManager reference
-        //locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager?
-
-        /* try {
-
-             //req_permission.processPermissionsResult(PermissionRequestCode,permissionList,)
-             locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000L, 10f, locationListener)
-         } catch (ex: SecurityException) {
-             Log.d("myTag", "Security Exception, no location available")
-         }*/
 
         addContactfab.setOnClickListener {
 
@@ -170,7 +159,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         //To continuously updateUI every 10s.
-        fixedRateTimer("timer", false, 0, 10000) {
+        fixedRateTimer("timer", false, 0, 2000) {
             this@MainActivity.runOnUiThread {
                 if (mTracking == true) {
                     updateUI()
@@ -340,9 +329,11 @@ class MainActivity : AppCompatActivity() {
         myLongitude.text = "Longitude: " + roundCoordinates(currentLongitude) + "°"
         myLatitude.text = "Longitude: " + roundCoordinates(currentLatitude) + "°"
 
+
+
     }
 
-    //Function to populate the companion object with the Ravens used in the service to compare coordinates. 
+    //Function to populate the companion object with the Ravens used in the service to compare coordinates.
     private fun populateRavenArray(ravenData : List<Raven>) {
 
         // var ravArr : Array<Raven> = arrayOf(emptyRaven, emptyRaven, emptyRaven)
@@ -353,7 +344,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-
     }
 
     override fun onResume() {
@@ -363,11 +353,11 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    fun Context.toast(message: String) {
+    private fun Context.toast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
-    fun roundCoordinates(coordinate: Double?): Double {    //function to round to 2 decimal places our GPS coordinates.
+    private fun roundCoordinates(coordinate: Double?): Double {    //function to round to 2 decimal places our GPS coordinates.
 
         val result = String.format("%.2f", coordinate)
         var roundedValue = 0.0
