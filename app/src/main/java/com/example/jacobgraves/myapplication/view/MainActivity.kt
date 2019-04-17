@@ -28,6 +28,7 @@ import com.example.jacobgraves.myapplication.BuildConfig
 import com.example.jacobgraves.myapplication.R
 import com.example.jacobgraves.myapplication.view.GPSUtils.BackgroundService
 import com.example.jacobgraves.myapplication.view.application.DatabaseApp
+import com.example.jacobgraves.myapplication.view.model.Raven
 import kotlinx.android.synthetic.main.activity_main.*
 import com.example.jacobgraves.myapplication.view.permissions.RequestPermission
 import com.example.jacobgraves.myapplication.view.providers.IRavenProvider
@@ -40,7 +41,7 @@ import javax.inject.Inject
 import kotlin.concurrent.fixedRateTimer
 
 
-private var locationManager:LocationManager? = null
+private var locationManager: LocationManager? = null
 private val PermissionsRequestCode = 234
 
 
@@ -51,15 +52,18 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var req_permission: RequestPermission
 
-    private var notificationManager:NotificationManager ?= null
+    private var notificationManager: NotificationManager? = null
 
     @Inject
     lateinit var ravenProvider: IRavenProvider
 
     companion object {          //Equivalent of public static var.
         var ravenID: Int = 0
-        var currentLongitude : Double? = null
-        var currentLatitude : Double? = null
+        var currentLongitude: Double? = null
+        var currentLatitude: Double? = null
+        val emptyRaven = Raven(Int.MAX_VALUE, "0", "0", "0", 0.0, 0.0)
+        var ravenArray: Array<Raven> = arrayOf<Raven>(emptyRaven, emptyRaven, emptyRaven)
+
     }
 
     lateinit var deletePopupDialog: Dialog
@@ -67,14 +71,14 @@ class MainActivity : AppCompatActivity() {
     val TAG = "PrimaryLog"
 
     var gpsService: BackgroundService? = null
-    var mTracking : Boolean = false
-    var connectionEstablished : Boolean = false
+    var mTracking: Boolean = false
+    var connectionEstablished: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-      //  notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        //  notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         val serviceIntent = Intent(this, BackgroundService::class.java)
         this.startService(serviceIntent)
@@ -105,13 +109,13 @@ class MainActivity : AppCompatActivity() {
         //Persistent LocationManager reference
         //locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager?
 
-       /* try {
+        /* try {
 
-            //req_permission.processPermissionsResult(PermissionRequestCode,permissionList,)
-            locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000L, 10f, locationListener)
-        } catch (ex: SecurityException) {
-            Log.d("myTag", "Security Exception, no location available")
-        }*/
+             //req_permission.processPermissionsResult(PermissionRequestCode,permissionList,)
+             locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000L, 10f, locationListener)
+         } catch (ex: SecurityException) {
+             Log.d("myTag", "Security Exception, no location available")
+         }*/
 
         addContactfab.setOnClickListener {
 
@@ -124,11 +128,10 @@ class MainActivity : AppCompatActivity() {
         //switch control
         var toggle = findViewById(R.id.switchonoff) as Switch
 
-        if(NewRaven.appRunning == null || NewRaven.appRunning == false) {
+        if (NewRaven.appRunning == null || NewRaven.appRunning == false) {
             toggle.isChecked = false
             turnScreenOff()
-        }
-        else if(NewRaven.appRunning == true) {
+        } else if (NewRaven.appRunning == true) {
             toggle.isChecked = true
             turnScreenOn()
         }
@@ -142,8 +145,7 @@ class MainActivity : AppCompatActivity() {
                 gpsService!!.startTracking()
                 mTracking = true
 
-            }
-            else {
+            } else {
 
                 Toast.makeText(applicationContext, "App turned off!", Toast.LENGTH_LONG).show()
                 turnScreenOff()
@@ -168,9 +170,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         //To continuously updateUI every 10s.
-        fixedRateTimer("timer",false,0,10000){
+        fixedRateTimer("timer", false, 0, 10000) {
             this@MainActivity.runOnUiThread {
-                if(mTracking == true) {
+                if (mTracking == true) {
                     updateUI()
                     Log.i(TAG, "UPDATEUI")
                 }
@@ -183,7 +185,7 @@ class MainActivity : AppCompatActivity() {
 
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             var name = name!!.className
-            if(name.endsWith("BackgroundService")) {
+            if (name.endsWith("BackgroundService")) {
                 val binder = service as BackgroundService.LocationServiceBinder
                 gpsService = binder.getService()
                 Log.i(TAG, "GPS READY.")
@@ -192,7 +194,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
-            if(name!!.className.equals("BackgroundService")) {
+            if (name!!.className.equals("BackgroundService")) {
                 gpsService = null
             }
         }
@@ -251,8 +253,8 @@ class MainActivity : AppCompatActivity() {
         deletePopupDialog.window.setBackgroundDrawable(transparentColor)
         deletePopupDialog.show()
 
-        var closePopupBtn : ImageButton = deletePopupDialog.findViewById(R.id.closePopup)
-        var deleteBtn : Button = deletePopupDialog.findViewById(R.id.deleteBtn)
+        var closePopupBtn: ImageButton = deletePopupDialog.findViewById(R.id.closePopup)
+        var deleteBtn: Button = deletePopupDialog.findViewById(R.id.deleteBtn)
 
         closePopupBtn.setOnClickListener {
 
@@ -266,7 +268,7 @@ class MainActivity : AppCompatActivity() {
 
             Log.d("RAVEN NO : ", "" + ravenNo)
 
-            if(ravenData.lastIndex >= ravenNo) {
+            if (ravenData.lastIndex >= ravenNo) {
                 ravenProvider.delete(ravenData[ravenNo])
                 Toast.makeText(this, "Raven deleted.", Toast.LENGTH_SHORT).show()
                 updateUI()
@@ -281,16 +283,16 @@ class MainActivity : AppCompatActivity() {
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>,
                                             grantResults: IntArray) {
         when (requestCode) {
-            PermissionsRequestCode ->{
-                val isPermissionsGranted = req_permission.processPermissionsResult(requestCode,permissions,grantResults)
+            PermissionsRequestCode -> {
+                val isPermissionsGranted = req_permission.processPermissionsResult(requestCode, permissions, grantResults)
 
-                if(isPermissionsGranted){
+                if (isPermissionsGranted) {
                     // Do the task now
                     //toast("Permissions granted.")
                     gpsService!!.startTracking()
                     mTracking = true
                     toast("Start Tracking")
-                }else{
+                } else {
                     toast("Permissions denied.")
                 }
                 return
@@ -302,12 +304,16 @@ class MainActivity : AppCompatActivity() {
 
         val ravenData = ravenProvider.getAll()
 
+        if (ravenData.isNotEmpty()) {
+            populateRavenArray(ravenData)
+        }
+
         var jsonData = Gson().toJson(ravenData)
         var jsonArray = JSONArray(jsonData)
 
         var nameArray = arrayOfNulls<String>(3)
 
-        for(jsonIndex in 0 .. (jsonArray.length()-1)) {
+        for (jsonIndex in 0..(jsonArray.length() - 1)) {
 
             if (jsonIndex < NewRaven.MAX_NBR_OF_RAVENS) {
 
@@ -319,20 +325,34 @@ class MainActivity : AppCompatActivity() {
         }
 
         currentName.text = nameArray[0]
-        if(currentName.text.equals("")) {
+        if (currentName.text.equals("")) {
             currentName.text = "No Raven"
         }
         currentName2.text = nameArray[1]
-        if(currentName2.text.equals("")) {
+        if (currentName2.text.equals("")) {
             currentName2.text = "No Raven"
         }
         currentName3.text = nameArray[2]
-        if(currentName3.text.equals("")) {
+        if (currentName3.text.equals("")) {
             currentName3.text = "No Raven"
         }
 
         myLongitude.text = "Longitude: " + roundCoordinates(currentLongitude) + "°"
         myLatitude.text = "Longitude: " + roundCoordinates(currentLatitude) + "°"
+
+    }
+
+    //Function to populate the companion object with the Ravens used in the service to compare coordinates. 
+    private fun populateRavenArray(ravenData : List<Raven>) {
+
+        // var ravArr : Array<Raven> = arrayOf(emptyRaven, emptyRaven, emptyRaven)
+        for (i in 0..(ravenData.size - 1)) {
+            ravenArray[i] = ravenData[i]
+            if (ravenArray[i].id != Int.MAX_VALUE) {
+                Log.i("POPULATE", "Raven " + ravenArray!![i].name + " - " + ravenArray!![i].phoneNo)
+            }
+        }
+
 
     }
 
@@ -389,7 +409,6 @@ class MainActivity : AppCompatActivity() {
 
 
     }*/
-
 
 
 }

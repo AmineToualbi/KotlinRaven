@@ -22,6 +22,7 @@ import android.graphics.Color
 import android.os.Build
 import android.support.annotation.RequiresApi
 import com.example.jacobgraves.myapplication.view.MainActivity
+import com.example.jacobgraves.myapplication.view.SMSUtils.SMSManager
 
 
 class BackgroundService : Service() {
@@ -31,6 +32,7 @@ class BackgroundService : Service() {
     var mLocationListener : LocationListener? = null
     var mLocationManager : LocationManager? = null
     var notificationManager : NotificationManager? = null
+    var smsManager: SMSManager? = null
 
     val LOCATION_INTERVAL : Long = 1000
     val LOCATION_DISTANCE : Float = 10f
