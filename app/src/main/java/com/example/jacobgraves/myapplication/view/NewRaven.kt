@@ -31,8 +31,8 @@ class NewRaven : AppCompatActivity() {
     var ravenName: String? = null
     var ravenPhoneNo: String? = null
     var ravenAddress: String? = null
-    var ravenLongitude: Double = 112.00
-    var ravenLatitude: Double = 22.00
+    var ravenLongitude: Double = -113.07
+    var ravenLatitude: Double = 37.68
     var ravenMessage: String? = null
 
     private val PermissionsRequestCode = 456
@@ -114,7 +114,7 @@ class NewRaven : AppCompatActivity() {
 
         cancelButton.setOnClickListener {
 
-            val ravenData = ravenProvider.getAll()
+           /* val ravenData = ravenProvider.getAll()
 
             if(ravenData == null || ravenData.isEmpty()) {
                 showMessage("No data!")
@@ -130,7 +130,9 @@ class NewRaven : AppCompatActivity() {
                         Log.d("JSON", jsonArray.getJSONObject(jsonIndex).getString("name"))
                     }
                 }
-            }
+            }*/
+
+            startActivity(goBackToMainActivity)
 
         }
 

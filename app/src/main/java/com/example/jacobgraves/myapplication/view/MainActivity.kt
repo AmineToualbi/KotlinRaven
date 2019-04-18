@@ -48,9 +48,6 @@ private val PermissionsRequestCode = 234
 
 class MainActivity : AppCompatActivity() {
 
-    private val requestSendSms: Int = 2
-    public var ifEnableSms: Boolean = false
-
     private lateinit var req_permission: RequestPermission
 
     private var notificationManager: NotificationManager? = null
@@ -327,7 +324,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         myLongitude.text = "Longitude: " + roundCoordinates(currentLongitude) + "°"
-        myLatitude.text = "Longitude: " + roundCoordinates(currentLatitude) + "°"
+        myLatitude.text = "Latitude: " + roundCoordinates(currentLatitude) + "°"
 
 
 

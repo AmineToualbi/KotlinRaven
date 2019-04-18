@@ -18,12 +18,16 @@ import java.lang.IllegalArgumentException
 import android.support.v4.app.NotificationCompat
 import android.R.attr.visibility
 import android.R
+import android.annotation.TargetApi
 import android.graphics.Color
 import android.os.Build
 import android.support.annotation.RequiresApi
 import android.telephony.SmsManager
 import com.example.jacobgraves.myapplication.view.SMSUtils.SMSManager
 import android.app.PendingIntent
+import android.graphics.BitmapFactory
+import android.graphics.drawable.Drawable
+import android.support.v4.content.ContextCompat
 import com.example.jacobgraves.myapplication.view.MainActivity
 
 
@@ -59,13 +63,20 @@ class BackgroundService : Service() {
             MainActivity.currentLongitude = location.longitude
             MainActivity.currentLatitude = location.latitude
 
+            val roundedLongitude = roundCoordinatesToOneDecimal(location.longitude)
+            val roundedLatitude = roundCoordinatesToOneDecimal(location.latitude)
+
+            Log.i(TAG, "Location: " + roundedLongitude + " - " + roundedLatitude)
+            Log.i(TAG, "Raven Location: " + roundCoordinatesToOneDecimal(MainActivity.ravenArray[0].longitude) + " - " +
+                    roundCoordinatesToOneDecimal(MainActivity.ravenArray[0].latitude))
+
             for(i in 0 .. (MainActivity.ravenArray.size-1)) {
 
                 //MaxValue is used as a placeholder notifying empty ravens.
                 if(MainActivity.ravenArray[i].id != Int.MAX_VALUE) {
 
-                    if(location.longitude == MainActivity.ravenArray[i].longitude
-                    && location.latitude == MainActivity.ravenArray[i].latitude) {
+                    if(roundedLongitude == roundCoordinatesToOneDecimal(MainActivity.ravenArray[i].longitude)
+                    && roundedLatitude == roundCoordinatesToOneDecimal(MainActivity.ravenArray[i].latitude)) {
 
 
                         val intent = Intent(applicationContext, BackgroundService::class.java)
@@ -74,6 +85,8 @@ class BackgroundService : Service() {
                         Log.i(TAG, "SENDMSG TO " + MainActivity.ravenArray[i].phoneNo)
                         smsManager.sendSMS(MainActivity.ravenArray[i].phoneNo,
                                 MainActivity.ravenArray[i].message, pi)
+
+                        getRavenSentNotification()
 
                     }
                 }
@@ -162,6 +175,7 @@ class BackgroundService : Service() {
         this.onDestroy()
     }
 
+    @TargetApi(Build.VERSION_CODES.O)
     fun getNotification() : Notification {
 
         var channel  = NotificationChannel("channel_01", "My Channel", NotificationManager.IMPORTANCE_DEFAULT)
@@ -180,6 +194,35 @@ class BackgroundService : Service() {
 
         return mBuilder.build()
 
+    }
+
+    @TargetApi(Build.VERSION_CODES.O)
+    fun getRavenSentNotification() {
+
+        var channel = NotificationChannel("channel_02", "My Channel1", NotificationManager.IMPORTANCE_HIGH)
+
+        notificationManager = getSystemService(NotificationManager::class.java)
+        notificationManager!!.createNotificationChannel(channel)
+
+        var notifBuilder = NotificationCompat.Builder(this, "channel_02")
+
+        var mBuilder = notifBuilder.setOngoing(false)
+                .setSmallIcon(R.drawable.stat_notify_chat)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(Notification.CATEGORY_MESSAGE)
+                .setContentTitle("Raven")
+                .setContentText("A raven was sent.")
+                .build()
+
+         notificationManager!!.notify(101, mBuilder)
+
+    }
+
+    fun roundCoordinatesToOneDecimal(coordinate: Double) : Double{
+        val number3digits:Double = String.format("%.3f", coordinate).toDouble()
+        val number2digits:Double = String.format("%.2f", number3digits).toDouble()
+        val solution:Double = String.format("%.1f", number2digits).toDouble()
+        return solution
     }
 
 

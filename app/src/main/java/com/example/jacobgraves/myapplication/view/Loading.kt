@@ -11,13 +11,11 @@ import kotlinx.android.synthetic.main.activity_new_raven.*
 
 class Loading : AppCompatActivity() {
 
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_loading)
 
-        val timer = object: CountDownTimer(1500,1000) {
+        val timer = object: CountDownTimer(1000,1000) {
             override fun onTick(millisUntilFinished: Long) {
             }
 
