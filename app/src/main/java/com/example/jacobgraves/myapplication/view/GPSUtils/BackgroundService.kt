@@ -60,6 +60,7 @@ class BackgroundService : Service() {
         override fun onLocationChanged(location: Location?) {
             mLastLocation = location!!
             Log.i(TAG, "LocationChanged " + location)
+
             MainActivity.currentLongitude = location.longitude
             MainActivity.currentLatitude = location.latitude
 

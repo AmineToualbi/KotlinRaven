@@ -6,6 +6,8 @@ import android.content.*
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.location.Address
+import android.location.Geocoder
 import android.location.LocationListener
 import android.location.LocationManager
 import android.support.v7.app.AppCompatActivity
@@ -38,6 +40,8 @@ import com.google.android.gms.common.GoogleApiAvailability
 import com.google.gson.Gson
 import com.karumi.dexter.Dexter
 import org.json.JSONArray
+import java.io.IOException
+import java.lang.IllegalArgumentException
 import javax.inject.Inject
 import kotlin.concurrent.fixedRateTimer
 
@@ -55,10 +59,12 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var ravenProvider: IRavenProvider
 
+    var addresses: List<Address> = emptyList()
+
     companion object {          //Equivalent of public static var.
         var ravenID: Int = 0
-        var currentLongitude: Double? = null
-        var currentLatitude: Double? = null
+        var currentLongitude: Double = 100.0
+        var currentLatitude: Double = 100.0
         val emptyRaven = Raven(Int.MAX_VALUE, "0", "0", "0", 0.0, 0.0)
         var ravenArray: Array<Raven> = arrayOf<Raven>(emptyRaven, emptyRaven, emptyRaven)
         var mTracking = false
@@ -70,6 +76,7 @@ class MainActivity : AppCompatActivity() {
 
     var gpsService: BackgroundService? = null
     var connectionEstablished: Boolean = false
+    var appIsOn = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -130,6 +137,7 @@ class MainActivity : AppCompatActivity() {
                 turnScreenOn()
                 gpsService!!.startTracking()
                 mTracking = true
+                appIsOn = true
 
             } else {
 
@@ -137,6 +145,7 @@ class MainActivity : AppCompatActivity() {
                 turnScreenOff()
                 gpsService!!.stopTracking()
                 mTracking = false
+                appIsOn = false
 
             }
         }
@@ -158,7 +167,7 @@ class MainActivity : AppCompatActivity() {
         //To continuously updateUI every 10s.
         fixedRateTimer("timer", false, 0, 2000) {
             this@MainActivity.runOnUiThread {
-                if (mTracking == true) {
+                if (appIsOn == true) {
                     updateUI()
                     Log.i(TAG, "UPDATEUI")
                 }
@@ -323,10 +332,23 @@ class MainActivity : AppCompatActivity() {
             currentName3.text = "No Raven"
         }
 
+        Log.i(TAG, "CurrentLongitude: " + currentLongitude + " CurrentLatitude: " + currentLatitude)
         myLongitude.text = "Longitude: " + roundCoordinates(currentLongitude) + "°"
         myLatitude.text = "Latitude: " + roundCoordinates(currentLatitude) + "°"
 
-
+        try {
+            addresses = Geocoder(this).getFromLocation(currentLatitude, currentLongitude, 1)
+            if (addresses.isNotEmpty()) {
+                Log.i(TAG, "Address: " + addresses.get(0).getAddressLine(0))
+                currentAddress.text = "Location: " + addresses.get(0).locality
+            }
+        }
+        catch(e: IOException) {
+            Toast.makeText(this, "Service not available.", Toast.LENGTH_SHORT).show()
+        }
+        catch(e: IllegalArgumentException) {
+            Toast.makeText(this, "Invalid lat/long", Toast.LENGTH_SHORT).show()
+        }
 
     }
 

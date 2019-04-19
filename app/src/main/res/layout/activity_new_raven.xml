@@ -110,7 +110,7 @@
         android:layout_marginBottom="27dp"
         android:background="@color/color5"
         android:gravity="center"
-        android:hint="Address (e.g. 1313 Mockingbird Ln)"
+        android:hint="Street, City, State"
         android:inputType="textPostalAddress"
         app:layout_constraintBottom_toTopOf="@+id/textView4"
         app:layout_constraintEnd_toEndOf="parent"

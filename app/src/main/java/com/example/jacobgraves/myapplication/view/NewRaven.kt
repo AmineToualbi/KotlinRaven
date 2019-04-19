@@ -5,6 +5,8 @@ import android.app.Dialog
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.location.Address
+import android.location.Geocoder
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
@@ -24,6 +26,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_new_raven.*
 import kotlinx.android.synthetic.main.popup_delete_raven.*
 import org.json.JSONArray
+import java.io.IOException
 import javax.inject.Inject
 
 class NewRaven : AppCompatActivity() {
@@ -31,9 +34,10 @@ class NewRaven : AppCompatActivity() {
     var ravenName: String? = null
     var ravenPhoneNo: String? = null
     var ravenAddress: String? = null
-    var ravenLongitude: Double = -113.07
-    var ravenLatitude: Double = 37.68
+    var ravenLongitude: Double = 0.0
+    var ravenLatitude: Double = 0.0
     var ravenMessage: String? = null
+    var validGeo: Boolean = false
 
     private val PermissionsRequestCode = 456
     private lateinit var req_permission: RequestPermission
@@ -49,6 +53,9 @@ class NewRaven : AppCompatActivity() {
         var appRunning = false
     }
 
+    val TAG = "NewRaven"
+
+    var addresses: List<Address> = emptyList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -78,8 +85,19 @@ class NewRaven : AppCompatActivity() {
             ravenAddress = enteredAddress.text.toString()
             ravenMessage = enteredMessage.text.toString()
 
-            //TODO - REVERSE GEOCODING TO GET LONG & LAT FROM ADDRESS.
+            try {
+                addresses = Geocoder(this).getFromLocationName(ravenAddress,1)
+            }
+            catch(e: IOException) {
+                Toast.makeText(this, "Invalid Address", Toast.LENGTH_SHORT).show()
+            }
 
+            if(addresses.isNotEmpty()) {
+                ravenLongitude = addresses.get(0).longitude
+                ravenLatitude = addresses.get(0).latitude
+                validGeo = true
+                Log.i(TAG, "Longitude: " + ravenLongitude + " Latitude: " + ravenLatitude)
+            }
 
             if(isValid(ravenName, ravenPhoneNo, ravenAddress, ravenMessage) == false) {
                 Toast.makeText(this, "Please fill all the field.", Toast.LENGTH_LONG).show()
@@ -192,6 +210,8 @@ class NewRaven : AppCompatActivity() {
         ravenProvider.save(raven)
 
         Toast.makeText(this, "Raven created.", Toast.LENGTH_SHORT).show()
+        validGeo = false
+        addresses = emptyList()
 
         startActivity(goBackToMainActivity)
     }
@@ -244,7 +264,8 @@ class NewRaven : AppCompatActivity() {
         return !name.isNullOrEmpty() &&
                 !phoneNo.isNullOrEmpty() &&
                 !address.isNullOrEmpty() &&
-                !message.isNullOrEmpty()
+                !message.isNullOrEmpty() &&
+                validGeo
 
     }
 
