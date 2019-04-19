@@ -237,7 +237,7 @@
         android:id="@+id/currentAddress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/currentAddress"
+        android:text= "Location: Unavailable"
         android:textColor="@color/color1"
         android:textSize="11dp"
         tools:layout_constraintTop_creator="1"

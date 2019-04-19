@@ -9,9 +9,6 @@ import android.content.Intent
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
-import android.os.Binder
-import android.os.Bundle
-import android.os.IBinder
 import android.util.Log
 import java.lang.Exception
 import java.lang.IllegalArgumentException
@@ -20,15 +17,21 @@ import android.R.attr.visibility
 import android.R
 import android.annotation.TargetApi
 import android.graphics.Color
-import android.os.Build
 import android.support.annotation.RequiresApi
 import android.telephony.SmsManager
 import com.example.jacobgraves.myapplication.view.SMSUtils.SMSManager
 import android.app.PendingIntent
 import android.graphics.BitmapFactory
 import android.graphics.drawable.Drawable
+import android.os.*
 import android.support.v4.content.ContextCompat
 import com.example.jacobgraves.myapplication.view.MainActivity
+import com.example.jacobgraves.myapplication.view.application.DatabaseApp
+import com.example.jacobgraves.myapplication.view.model.Raven
+import com.example.jacobgraves.myapplication.view.providers.IRavenProvider
+import java.util.*
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 
 class BackgroundService : Service() {
@@ -42,6 +45,10 @@ class BackgroundService : Service() {
 
     val LOCATION_INTERVAL : Long = 1000
     val LOCATION_DISTANCE : Float = 10f
+
+    //@Inject           //For next update = Raven shut down for certain time.
+   // lateinit var ravenProvider: IRavenProvider
+
 
     override fun onBind(intent: Intent?): IBinder? {
         return binder
@@ -76,8 +83,11 @@ class BackgroundService : Service() {
                 //MaxValue is used as a placeholder notifying empty ravens.
                 if(MainActivity.ravenArray[i].id != Int.MAX_VALUE) {
 
-                    if(roundedLongitude == roundCoordinatesToOneDecimal(MainActivity.ravenArray[i].longitude)
-                    && roundedLatitude == roundCoordinatesToOneDecimal(MainActivity.ravenArray[i].latitude)) {
+                    val distanceToRavenLocation = distanceBetweenLocations(MainActivity.currentLatitude,
+                            MainActivity.currentLongitude, MainActivity.ravenArray[i].latitude,
+                            MainActivity.ravenArray[i].longitude)
+
+                    if(userInRange(distanceToRavenLocation) == true) {
 
 
                         val intent = Intent(applicationContext, BackgroundService::class.java)
@@ -88,6 +98,8 @@ class BackgroundService : Service() {
                                 MainActivity.ravenArray[i].message, pi)
 
                         getRavenSentNotification()
+
+                      //  lockRaven(MainActivity.ravenArray[i])  //For next update = Raven shut down for certain time.
 
                     }
                 }
@@ -107,6 +119,102 @@ class BackgroundService : Service() {
         }
 
     }
+
+    //Returns distance in KM.
+    private fun distanceBetweenLocations(lat1: Double, long1: Double, lat2: Double, long2: Double) : Double {
+
+        val theta: Double = long1 - long2
+        var dist : Double =Math.sin(deg2rad(lat1)) * Math.sin(deg2rad(lat2)) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.cos(deg2rad(theta))
+        dist = Math.acos(dist)
+        dist = rad2deg(dist)
+        dist = dist * 60 * 1.1515
+        dist = dist * 1.609344     //Conversion from Miles to KM.
+        return dist
+
+    }
+
+    private fun deg2rad(deg: Double) : Double {
+        return (deg * Math.PI / 180.0)
+    }
+
+    private fun rad2deg(rad: Double): Double {
+        return rad * 180.0 / Math.PI
+    }
+
+    private fun userInRange(distance: Double) : Boolean {
+
+        if(distance <= .5) {            //Radius = 500m.
+            return true
+        }
+        return false
+    }
+
+    //This function sets a timer for 10 hours & makes the Raven not usable.
+  /*  private fun lockRaven(raven: Raven) {         //For next update = Raven shut down for certain time.
+
+        val minute:Long = 1000 * 60 // 1000 milliseconds = 1 second
+        val millisInFuture:Long =  minute * 1
+        val countDownInterval:Long = 1000
+
+        var lockedRaven = raven
+        lockedRaven.usable = false
+        ravenProvider.update(lockedRaven)
+
+        timer(millisInFuture,countDownInterval, raven).start()
+
+    } */
+
+    /*//Timer function for lockRaven()
+    private fun timer(millisInFuture:Long,countDownInterval:Long, raven: Raven):CountDownTimer {
+
+        return object : CountDownTimer(millisInFuture, countDownInterval) {     //For next update = Raven shut down for certain time.
+            override fun onTick(millisUntilFinished: Long) {
+                val timeRemaining = timeString(millisUntilFinished)
+
+                Log.i(TAG, "Time Remaining : " + timeRemaining)
+
+            }
+
+            override fun onFinish() {
+                Log.i(TAG, "Time Remaining : DONE")
+                unlockRaven(raven)
+
+            }
+        }
+
+    }*/
+
+    //For next update = Raven shut down for certain time.
+    /*private fun unlockRaven(raven: Raven) {
+
+        var lockedRaven = raven
+        lockedRaven.usable = true
+        ravenProvider.update(lockedRaven)
+
+    }*/
+
+    //For next update = Raven shut down for certain time.
+    //Testing fct to print time during timer.
+    /*private fun timeString(millisUntilFinished:Long):String{
+        var millisUntilFinished:Long = millisUntilFinished
+        val days = TimeUnit.MILLISECONDS.toDays(millisUntilFinished)
+        millisUntilFinished -= TimeUnit.DAYS.toMillis(days)
+
+        val hours = TimeUnit.MILLISECONDS.toHours(millisUntilFinished)
+        millisUntilFinished -= TimeUnit.HOURS.toMillis(hours)
+
+        val minutes = TimeUnit.MILLISECONDS.toMinutes(millisUntilFinished)
+        millisUntilFinished -= TimeUnit.MINUTES.toMillis(minutes)
+
+        val seconds = TimeUnit.MILLISECONDS.toSeconds(millisUntilFinished)
+
+        // Format the string
+        return String.format(
+                Locale.getDefault(),
+                "%02d day: %02d hour: %02d min: %02d sec",
+                days,hours, minutes,seconds
+        )
+    }*/
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
@@ -133,6 +241,9 @@ class BackgroundService : Service() {
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setCategory(Notification.CATEGORY_SERVICE)
                 .build()*/
+
+       // DatabaseApp.component.injectService(this)     //For next update = Raven shut down for certain time.
+
 
         startForeground(12345678, getNotification())
 

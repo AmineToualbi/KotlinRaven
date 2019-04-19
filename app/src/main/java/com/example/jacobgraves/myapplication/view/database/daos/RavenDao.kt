@@ -14,7 +14,7 @@ interface RavenDao {                //Data Access Object.
     @Insert(onConflict = IGNORE)
     fun insert(raven: Raven)
 
-    @Update(onConflict = IGNORE)
+    @Update(onConflict = REPLACE)
     fun update(raven: Raven)
 
     @Delete

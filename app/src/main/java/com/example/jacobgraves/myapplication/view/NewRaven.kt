@@ -132,7 +132,7 @@ class NewRaven : AppCompatActivity() {
 
         cancelButton.setOnClickListener {
 
-           /* val ravenData = ravenProvider.getAll()
+            val ravenData = ravenProvider.getAll()
 
             if(ravenData == null || ravenData.isEmpty()) {
                 showMessage("No data!")
@@ -148,9 +148,9 @@ class NewRaven : AppCompatActivity() {
                         Log.d("JSON", jsonArray.getJSONObject(jsonIndex).getString("name"))
                     }
                 }
-            }*/
+            }
 
-            startActivity(goBackToMainActivity)
+         //   startActivity(goBackToMainActivity)
 
         }
 
@@ -203,7 +203,7 @@ class NewRaven : AppCompatActivity() {
     private fun saveRaven(newRavenID: Int, goBackToMainActivity: Intent) {
 
         val raven: Raven = Raven(newRavenID, ravenName.toString(),
-                ravenPhoneNo.toString(), ravenMessage.toString(), ravenLongitude, ravenLatitude)
+                ravenPhoneNo.toString(), ravenMessage.toString(), ravenLongitude, ravenLatitude, true)
 
         MainActivity.ravenID++
 

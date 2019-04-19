@@ -10,6 +10,7 @@ class Raven(
             var phoneNo: String,
             var message: String,
             var longitude: Double,
-            var latitude: Double) {
+            var latitude: Double,
+            var usable: Boolean) {
 
 }

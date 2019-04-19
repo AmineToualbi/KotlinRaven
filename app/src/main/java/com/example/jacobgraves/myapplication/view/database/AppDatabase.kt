@@ -9,7 +9,7 @@ import com.example.jacobgraves.myapplication.view.model.Raven
         entities = [
         Raven::class
         ],
-        version = 2,
+        version = 3,
         exportSchema = false
 )
 

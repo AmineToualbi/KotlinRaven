@@ -1,5 +1,6 @@
 package com.example.jacobgraves.myapplication.view.application
 
+import com.example.jacobgraves.myapplication.view.GPSUtils.BackgroundService
 import com.example.jacobgraves.myapplication.view.MainActivity
 import com.example.jacobgraves.myapplication.view.NewRaven
 import com.example.jacobgraves.myapplication.view.application.dependencyModules.ProviderModule
@@ -12,5 +13,6 @@ interface DatabaseAppComponent {
 
     fun inject(newRavenActivity: NewRaven)
     fun injectMain(mainActivity: MainActivity)
+    fun injectService(backgroundService: BackgroundService)
 
 }

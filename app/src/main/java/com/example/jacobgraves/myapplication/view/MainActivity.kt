@@ -65,7 +65,7 @@ class MainActivity : AppCompatActivity() {
         var ravenID: Int = 0
         var currentLongitude: Double = 100.0
         var currentLatitude: Double = 100.0
-        val emptyRaven = Raven(Int.MAX_VALUE, "0", "0", "0", 0.0, 0.0)
+        val emptyRaven = Raven(Int.MAX_VALUE, "0", "0", "0", 0.0, 0.0, true)
         var ravenArray: Array<Raven> = arrayOf<Raven>(emptyRaven, emptyRaven, emptyRaven)
         var mTracking = false
     }
@@ -307,6 +307,7 @@ class MainActivity : AppCompatActivity() {
         var jsonArray = JSONArray(jsonData)
 
         var nameArray = arrayOfNulls<String>(3)
+       // var usableArray = arrayOfNulls<Boolean>(3)        //For next update = Raven shut down for certain time.
 
         for (jsonIndex in 0..(jsonArray.length() - 1)) {
 
@@ -314,6 +315,7 @@ class MainActivity : AppCompatActivity() {
 
                 Log.d("JSON", jsonArray.getJSONObject(jsonIndex).getString("name"))
                 nameArray[jsonIndex] = jsonArray.getJSONObject(jsonIndex).getString("name")
+               // usableArray[jsonIndex] = jsonArray.getJSONObject(jsonIndex).getBoolean("usable") //For next update = Raven shut down for certain time.
 
             }
 
@@ -323,14 +325,24 @@ class MainActivity : AppCompatActivity() {
         if (currentName.text.equals("")) {
             currentName.text = "No Raven"
         }
+        /*else if(usableArray[0] == false) {        //For next update = Raven shut down for certain time.
+            currentName.text = nameArray[0] + " (OFF)"
+            Log.i(TAG, "Raven is set to RED.")
+        }*/
         currentName2.text = nameArray[1]
         if (currentName2.text.equals("")) {
             currentName2.text = "No Raven"
         }
+       /* else if(usableArray[1] == false) {    //For next update = Raven shut down for certain time.
+            currentName.setTextColor(Color.RED)
+        }*/
         currentName3.text = nameArray[2]
         if (currentName3.text.equals("")) {
             currentName3.text = "No Raven"
         }
+       /* else if(usableArray[2] == false) {        //For next update = Raven shut down for certain time.
+            currentName.setTextColor(Color.RED)
+        }*/
 
         Log.i(TAG, "CurrentLongitude: " + currentLongitude + " CurrentLatitude: " + currentLatitude)
         myLongitude.text = "Longitude: " + roundCoordinates(currentLongitude) + "°"
@@ -339,8 +351,14 @@ class MainActivity : AppCompatActivity() {
         try {
             addresses = Geocoder(this).getFromLocation(currentLatitude, currentLongitude, 1)
             if (addresses.isNotEmpty()) {
+                val city = addresses.get(0).locality
                 Log.i(TAG, "Address: " + addresses.get(0).getAddressLine(0))
-                currentAddress.text = "Location: " + addresses.get(0).locality
+                if(city == null) {
+                    currentAddress.text = "Location: No City Found"
+                }
+                else {
+                    currentAddress.text = "Location: " + city
+                }
             }
         }
         catch(e: IOException) {
@@ -349,6 +367,7 @@ class MainActivity : AppCompatActivity() {
         catch(e: IllegalArgumentException) {
             Toast.makeText(this, "Invalid lat/long", Toast.LENGTH_SHORT).show()
         }
+
 
     }
 
@@ -388,36 +407,6 @@ class MainActivity : AppCompatActivity() {
         return roundedValue
 
     }
-
-
-    /* private fun createNotificationChannel(id: String, name: String, description: String) {
-        val importance = NotificationManager.IMPORTANCE_LOW
-        val channel = NotificationChannel(id, name, importance)
-        channel.description = description
-        channel.enableLights(true)
-        channel.lightColor = Color.RED
-        channel.enableVibration(true)
-        channel.vibrationPattern =
-                longArrayOf(100, 200, 300, 400, 500, 400, 300, 200, 400)
-        notificationManager?.createNotificationChannel(channel)
-    }*/
-
-    /*fun sendNotification(){
-        val notificationID = 101
-        val resultIntent = Intent(this, MainActivity::class.java)
-        val pendingIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT)
-        val channelID = "com.example.jacobgraves.myapplication.view"
-        val notification = Notification.Builder(this, channelID)
-                .setContentTitle("Raven")
-                .setContentText("Message Sent")
-                .setSmallIcon(R.drawable.close)
-                .setContentIntent(pendingIntent)
-                .setNumber(10)
-                .build()
-        notificationManager?.notify(notificationID, notification)
-
-
-    }*/
 
 
 }
