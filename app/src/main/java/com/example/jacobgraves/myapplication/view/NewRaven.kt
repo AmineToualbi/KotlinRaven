@@ -261,6 +261,37 @@ class NewRaven : AppCompatActivity() {
 
     private fun isValid(name: String?, phoneNo: String?, address: String?, message: String?): Boolean {
 
+        if(name.isNullOrEmpty()) {
+            nameTextView.setTextColor(Color.RED)
+        }
+        else {
+            nameTextView.setTextColor(R.color.color2)
+        }
+        if(phoneNo.isNullOrEmpty()) {
+            phoneNoTextView.setTextColor(Color.RED)
+        }
+        else {
+            phoneNoTextView.setTextColor(R.color.color2)
+        }
+        if(address.isNullOrEmpty()) {
+            addressTextView.setTextColor(Color.RED)
+        }
+        else {
+            addressTextView.setTextColor(R.color.color2)
+        }
+        if(message.isNullOrEmpty()) {
+            messageTextView.setTextColor(Color.RED)
+        }
+        else {
+            messageTextView.setTextColor(R.color.color2)
+        }
+        if(validGeo == false) {
+            addressTextView.setTextColor(Color.RED)
+        }
+        else {
+            addressTextView.setTextColor(R.color.color2)
+        }
+
         return !name.isNullOrEmpty() &&
                 !phoneNo.isNullOrEmpty() &&
                 !address.isNullOrEmpty() &&
