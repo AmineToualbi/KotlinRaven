@@ -97,7 +97,7 @@ class BackgroundService : Service() {
                         smsManager.sendSMS(MainActivity.ravenArray[i].phoneNo,
                                 MainActivity.ravenArray[i].message, pi)
 
-                        getRavenSentNotification()
+                        getRavenSentNotification(MainActivity.ravenArray[i].name)
 
                       //  lockRaven(MainActivity.ravenArray[i])  //For next update = Raven shut down for certain time.
 
@@ -303,13 +303,14 @@ class BackgroundService : Service() {
                 .setCategory(Notification.CATEGORY_SERVICE)
                 .setContentTitle("Raven")
                 .setContentText("Raven is currently using your location.")
+                .setSubText("Switch the app to OFF to save battery")
 
         return mBuilder.build()
 
     }
 
     @TargetApi(Build.VERSION_CODES.O)
-    fun getRavenSentNotification() {
+    fun getRavenSentNotification(name: String) {
 
         var channel = NotificationChannel("channel_02", "My Channel1", NotificationManager.IMPORTANCE_HIGH)
 
@@ -323,7 +324,8 @@ class BackgroundService : Service() {
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setCategory(Notification.CATEGORY_MESSAGE)
                 .setContentTitle("Raven")
-                .setContentText("A raven was sent.")
+                .setContentText("A raven was sent to " + name + ".")
+                .setSubText("The Raven is now disabled for 10 hours")
                 .build()
 
          notificationManager!!.notify(101, mBuilder)
