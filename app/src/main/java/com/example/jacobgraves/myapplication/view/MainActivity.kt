@@ -52,75 +52,90 @@ private val PermissionsRequestCode = 234
 
 class MainActivity : AppCompatActivity() {
 
+    //RequestPermission object to handle permissions in the app.
     private lateinit var req_permission: RequestPermission
 
-    private var notificationManager: NotificationManager? = null
-
+    //Database provider.
     @Inject
     lateinit var ravenProvider: IRavenProvider
-
-    var addresses: List<Address> = emptyList()
 
     companion object {          //Equivalent of public static var.
         var ravenID: Int = 0
         var currentLongitude: Double = 100.0
         var currentLatitude: Double = 100.0
+        //emptyRaven works as a placeholder to avoid NullPointerExceptions when checking for Ravens in ravenArray.
         val emptyRaven = Raven(Int.MAX_VALUE, "0", "0", "0", 0.0, 0.0, true)
+        //ravenArray is continuously updated w latest Ravens in db accessible from everywhere in the app.
         var ravenArray: Array<Raven> = arrayOf<Raven>(emptyRaven, emptyRaven, emptyRaven)
         var mTracking = false
     }
 
+    //DialogBox for the popup to delete a Raven.
     lateinit var deletePopupDialog: Dialog
 
+    //Tag String used for Logging & Testing.
     val TAG = "PrimaryLog"
 
+    //BackgroundService object to handle most of the operations of our app.
     var gpsService: BackgroundService? = null
+    //Flag to ensure our app is connected to the Service.
     var connectionEstablished: Boolean = false
+
+    //Flag notifying when app is ON.
     var appIsOn = false
+
+    //List that will contain the current address "reverse geocoded" by the geocoder.
+    var addresses: List<Address> = emptyList()
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        //  notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
+        //Create, start, & bind foreground service to app.
         val serviceIntent = Intent(this, BackgroundService::class.java)
         this.startService(serviceIntent)
         this.bindService(serviceIntent, myConnection, Context.BIND_AUTO_CREATE)
 
-
         Log.i(TAG, "ONCREATE")
 
-
+        //Initialize popup to delete a Raven.
         deletePopupDialog = Dialog(this)
         deletePopupDialog.findViewById<View>(R.layout.popup_delete_raven)
 
+        //Inject the Database Component to make it usable in this view.
         DatabaseApp.component.injectMain(this)
 
-
+        //List of permissions needed in our app.
         val permissionList = listOf<String>(
                 Manifest.permission.ACCESS_COARSE_LOCATION,
                 Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.SEND_SMS
         )
 
+        //Initialize RequestPermission object & check for the permissions.
         req_permission = RequestPermission(this, permissionList, PermissionsRequestCode)
         req_permission.checkPermissions()
 
-
+        //Hide OFF sign.
         offsign.alpha = 0f
 
+
+        //If user clicks on fab, go to New Raven screen.
         addContactfab.setOnClickListener {
 
             val addNewRavenIntent = Intent(applicationContext, NewRaven::class.java)
             startActivity(addNewRavenIntent)
 
-
         }
 
-        //switch control
+
+        //Switch turning OFF & ON the app.
         var toggle = findViewById(R.id.switchonoff) as Switch
 
+        //Check if app is running or was running to either keep switch ON or turn it off when app starts at beginning of lifecycle.
         if (NewRaven.appRunning == null || NewRaven.appRunning == false) {
             toggle.isChecked = false
             turnScreenOff()
@@ -129,9 +144,11 @@ class MainActivity : AppCompatActivity() {
             turnScreenOn()
         }
 
+
+        //Switch Control:
         toggle.setOnCheckedChangeListener() { buttonView, isChecked ->
 
-            if (isChecked) {
+            if (isChecked) {    //App ON -> start tracking GPS.
 
                 Toast.makeText(applicationContext, "App turned on!", Toast.LENGTH_LONG).show()
                 turnScreenOn()
@@ -139,7 +156,9 @@ class MainActivity : AppCompatActivity() {
                 mTracking = true
                 appIsOn = true
 
-            } else {
+            }
+
+            else {              //App OFF -> stop tracking GPS.
 
                 Toast.makeText(applicationContext, "App turned off!", Toast.LENGTH_LONG).show()
                 turnScreenOff()
@@ -148,8 +167,8 @@ class MainActivity : AppCompatActivity() {
                 appIsOn = false
 
             }
-        }
 
+        }
 
 
         editRaven.setOnClickListener {
@@ -164,7 +183,8 @@ class MainActivity : AppCompatActivity() {
             showDeleteRavenPopup(2)
         }
 
-        //To continuously updateUI every 10s.
+
+        //Continuously call updateUI() when app is ON every period.
         fixedRateTimer("timer", false, 0, 2000) {
             this@MainActivity.runOnUiThread {
                 if (appIsOn == true) {
@@ -176,6 +196,8 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+
+    //ServiceConnection object to bind GPS Service to our app.
     private val myConnection = object : ServiceConnection {
 
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
@@ -197,6 +219,7 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+    //Turn screen OFF when switch is OFF.
     private fun turnScreenOff() {
 
         addContactfab.isEnabled = false
@@ -219,6 +242,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    //Turn screen ON when switch is ON.
     private fun turnScreenOn() {
 
         addContactfab.isEnabled = true
@@ -241,28 +265,32 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+
+    //Function to display Delete Raven Popup. RavenNo indicates which Raven needs to be deleted.
     private fun showDeleteRavenPopup(ravenNo: Int) {
 
+        //Show the popup.
         deletePopupDialog.setContentView(R.layout.popup_delete_raven)
         var transparentColor = ColorDrawable(Color.TRANSPARENT)
         deletePopupDialog.window.setBackgroundDrawable(transparentColor)
         deletePopupDialog.show()
 
+        //Initialize buttons to avoid NPE.
         var closePopupBtn: ImageButton = deletePopupDialog.findViewById(R.id.closePopup)
         var deleteBtn: Button = deletePopupDialog.findViewById(R.id.deleteBtn)
 
+        //If close -> dismiss the popup.
         closePopupBtn.setOnClickListener {
-
             deletePopupDialog.dismiss()
-
         }
 
+        //If delete -> remove Raven from db & update UI.
         deleteBtn.setOnClickListener {
 
             val ravenData = ravenProvider.getAll()
-
             Log.d("RAVEN NO : ", "" + ravenNo)
 
+            //Safe check: If the current Raven to delete has a correct id (0 to 2), delete it.
             if (ravenData.lastIndex >= ravenNo) {
                 ravenProvider.delete(ravenData[ravenNo])
                 Toast.makeText(this, "Raven deleted.", Toast.LENGTH_SHORT).show()
@@ -271,6 +299,125 @@ class MainActivity : AppCompatActivity() {
             }
 
         }
+
+    }
+
+
+    //Function to update the UI in the main view. This is continuously called from OnCreate().
+    private fun updateUI() {
+
+        val ravenData = ravenProvider.getAll()
+
+        populateRavenArray(ravenData)       //Continuously update ravenArray to have the latest Ravens stored in the db.
+
+        var jsonData = Gson().toJson(ravenData)
+        var jsonArray = JSONArray(jsonData)
+
+        var nameArray = arrayOfNulls<String>(3)     //Array storing the names of the Ravens.
+        var usableArray = arrayOfNulls<Boolean>(3)  //Array storing whether a Raven is usable or not.
+
+        //Populate nameArray & usableArray.
+        for (jsonIndex in 0..(jsonArray.length() - 1)) {
+            if (jsonIndex < NewRaven.MAX_NBR_OF_RAVENS) {       //Safe check.
+
+                Log.d("JSON", jsonArray.getJSONObject(jsonIndex).getString("name"))
+                nameArray[jsonIndex] = jsonArray.getJSONObject(jsonIndex).getString("name")
+                usableArray[jsonIndex] = jsonArray.getJSONObject(jsonIndex).getBoolean("usable") //For next update = Raven shut down for certain time.
+
+            }
+        }
+
+        currentName.text = nameArray[0]
+        currentName.setTextColor(R.color.color2)
+        if (currentName.text.equals("")) {
+            currentName.text = "No Raven"
+        }
+        else if(usableArray[0] == false) {
+            currentName.text = nameArray[0] + " (OFF)"
+            currentName.setTextColor(Color.RED)
+            Log.i(TAG, "Raven is set to RED.")
+        }
+        currentName2.text = nameArray[1]
+        currentName2.setTextColor(R.color.color2)
+        if (currentName2.text.equals("")) {
+            currentName2.text = "No Raven"
+
+        }
+       else if(usableArray[1] == false) {
+            currentName2.text = nameArray[1] + " (OFF)"
+            currentName2.setTextColor(Color.RED)
+        }
+        currentName3.text = nameArray[2]
+        currentName3.setTextColor(R.color.color2)
+        if (currentName3.text.equals("")) {
+            currentName3.text = "No Raven"
+        }
+        else if(usableArray[2] == false) {
+            currentName3.text = nameArray[2] + " (OFF)"
+            currentName3.setTextColor(Color.RED)
+        }
+
+        Log.i(TAG, "CurrentLongitude: " + currentLongitude + " CurrentLatitude: " + currentLatitude)
+        myLongitude.text = "Longitude: " + roundCoordinates(currentLongitude) + "°"
+        myLatitude.text = "Latitude: " + roundCoordinates(currentLatitude) + "°"
+
+        //Reverse GeoCoding, GPS Coordinates -> Address:
+        try {
+
+            addresses = Geocoder(this).getFromLocation(currentLatitude, currentLongitude, 1)
+            if (addresses.isNotEmpty()) {
+                val city = addresses.get(0).locality
+                Log.i(TAG, "Address: " + addresses.get(0).getAddressLine(0))
+                if(city == null) {
+                    currentAddress.text = "Location: No City Found"
+                }
+                else {
+                    currentAddress.text = "Location: " + city
+                }
+            }
+
+        }
+        catch(e: IOException) {
+            Toast.makeText(this, "Service not available.", Toast.LENGTH_SHORT).show()
+        }
+        catch(e: IllegalArgumentException) {
+            Toast.makeText(this, "Invalid lat/long", Toast.LENGTH_SHORT).show()
+        }
+
+    }
+
+    //Function to populate the companion object with the Ravens used in the service to compare coordinates.
+    private fun populateRavenArray(ravenData : List<Raven>) {
+
+        //Placeholder array. Add Ravens created to this & keep emptyRaven if free spot for Raven.
+        val ravArr : Array<Raven> = arrayOf(emptyRaven, emptyRaven, emptyRaven)
+
+        //Populate the placeholder array with ravenData in the db.
+        for (i in 0..(ravenData.size - 1)) {
+            ravArr[i] = ravenData[i]
+        }
+
+        ravenArray = ravArr         //Copy placeholder array into ravenArray.
+
+        for(i in 0..(ravenArray.size-1)) {
+            Log.i("POPULATE", "Raven " + ravenArray!![i].name + " - " + ravenArray!![i].phoneNo)
+        }
+
+    }
+
+
+    //Function to round coordinates to 2 decimal points.
+    private fun roundCoordinates(coordinate: Double?): Double {
+
+        val result = String.format("%.2f", coordinate)
+        var roundedValue = 0.0
+        try {
+            roundedValue = java.lang.Double.parseDouble(result)
+        }
+        catch (ex: NumberFormatException) {
+        }
+
+        return roundedValue
 
     }
 
@@ -295,111 +442,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateUI() {
-
-        val ravenData = ravenProvider.getAll()
-
-      //  if (ravenData.isNotEmpty()) {
-            populateRavenArray(ravenData)
-       // }
-
-        var jsonData = Gson().toJson(ravenData)
-        var jsonArray = JSONArray(jsonData)
-
-        var nameArray = arrayOfNulls<String>(3)
-        var usableArray = arrayOfNulls<Boolean>(3)        //For next update = Raven shut down for certain time.
-
-        for (jsonIndex in 0..(jsonArray.length() - 1)) {
-
-            if (jsonIndex < NewRaven.MAX_NBR_OF_RAVENS) {
-
-                Log.d("JSON", jsonArray.getJSONObject(jsonIndex).getString("name"))
-                nameArray[jsonIndex] = jsonArray.getJSONObject(jsonIndex).getString("name")
-                usableArray[jsonIndex] = jsonArray.getJSONObject(jsonIndex).getBoolean("usable") //For next update = Raven shut down for certain time.
-
-            }
-
-        }
-
-        currentName.text = nameArray[0]
-        currentName.setTextColor(R.color.color2)
-        if (currentName.text.equals("")) {
-            currentName.text = "No Raven"
-        }
-        else if(usableArray[0] == false) {        //For next update = Raven shut down for certain time.
-            currentName.text = nameArray[0] + " (OFF)"
-            currentName.setTextColor(Color.RED)
-            Log.i(TAG, "Raven is set to RED.")
-        }
-        currentName2.text = nameArray[1]
-        currentName2.setTextColor(R.color.color2)
-        if (currentName2.text.equals("")) {
-            currentName2.text = "No Raven"
-
-        }
-       else if(usableArray[1] == false) {    //For next update = Raven shut down for certain time.
-            currentName2.text = nameArray[1] + " (OFF)"
-            currentName2.setTextColor(Color.RED)
-        }
-        currentName3.text = nameArray[2]
-        currentName3.setTextColor(R.color.color2)
-        if (currentName3.text.equals("")) {
-            currentName3.text = "No Raven"
-        }
-        else if(usableArray[2] == false) {        //For next update = Raven shut down for certain time.
-            currentName3.text = nameArray[2] + " (OFF)"
-            currentName3.setTextColor(Color.RED)
-        }
-
-        Log.i(TAG, "CurrentLongitude: " + currentLongitude + " CurrentLatitude: " + currentLatitude)
-        myLongitude.text = "Longitude: " + roundCoordinates(currentLongitude) + "°"
-        myLatitude.text = "Latitude: " + roundCoordinates(currentLatitude) + "°"
-
-        try {
-            addresses = Geocoder(this).getFromLocation(currentLatitude, currentLongitude, 1)
-            if (addresses.isNotEmpty()) {
-                val city = addresses.get(0).locality
-                Log.i(TAG, "Address: " + addresses.get(0).getAddressLine(0))
-                if(city == null) {
-                    currentAddress.text = "Location: No City Found"
-                }
-                else {
-                    currentAddress.text = "Location: " + city
-                }
-            }
-        }
-        catch(e: IOException) {
-            Toast.makeText(this, "Service not available.", Toast.LENGTH_SHORT).show()
-        }
-        catch(e: IllegalArgumentException) {
-            Toast.makeText(this, "Invalid lat/long", Toast.LENGTH_SHORT).show()
-        }
-
-
-    }
-
-    //Function to populate the companion object with the Ravens used in the service to compare coordinates.
-    private fun populateRavenArray(ravenData : List<Raven>) {
-
-        val ravArr : Array<Raven> = arrayOf(emptyRaven, emptyRaven, emptyRaven)
-        for (i in 0..(ravenData.size - 1)) {
-            //  ravenArray[i] = ravenData[i]
-            ravArr[i] = ravenData[i]
-            // if (ravenArray[i].id != Int.MAX_VALUE) {
-            // Log.i("POPULATE", "Raven " + ravenArray!![i].name + " - " + ravenArray!![i].phoneNo)
-            //}
-            // else {
-            //   Log.i("POPULATE", "Raven - Empty Raven")
-
-            // }
-        }
-        ravenArray = ravArr
-        for(i in 0..(ravenArray.size-1)) {
-            Log.i("POPULATE", "Raven " + ravenArray!![i].name + " - " + ravenArray!![i].phoneNo)
-        }
-
-    }
-
 
     override fun onResume() {
         super.onResume()
@@ -412,23 +454,11 @@ class MainActivity : AppCompatActivity() {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
-    private fun roundCoordinates(coordinate: Double?): Double {    //function to round to 2 decimal places our GPS coordinates.
-
-        val result = String.format("%.2f", coordinate)
-        var roundedValue = 0.0
-        try {
-            roundedValue = java.lang.Double.parseDouble(result)
-        } catch (ex: NumberFormatException) {
-        }
-
-        return roundedValue
-
-    }
-
     //This function disables the back button.
     override fun onBackPressed() {
         // Do Here what ever you want do on back press;
     }
+
 
 
 }

@@ -34,20 +34,27 @@ import javax.inject.Inject
 
 class NewRaven : AppCompatActivity() {
 
+    //Fields used to create Ravens.
     var ravenName: String? = null
     var ravenPhoneNo: String? = null
     var ravenAddress: String? = null
     var ravenLongitude: Double = 0.0
     var ravenLatitude: Double = 0.0
     var ravenMessage: String? = null
+
+    //Flag to check whether geocoding worked to get GPS coordinates.
     var validGeo: Boolean = false
+
 
     private val PermissionsRequestCode = 456
     private lateinit var req_permission: RequestPermission
 
+
+    //Database:
     @Inject
     lateinit var ravenProvider: IRavenProvider
 
+    //DialogBox to ask user to overwrite Raven.
     lateinit var overwritePopupDialog: Dialog
 
 
