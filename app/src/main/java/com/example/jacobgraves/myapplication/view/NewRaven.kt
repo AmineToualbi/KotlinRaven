@@ -17,6 +17,7 @@ import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import com.example.jacobgraves.myapplication.R
+import com.example.jacobgraves.myapplication.view.GPSUtils.BackgroundService
 import com.example.jacobgraves.myapplication.view.application.DatabaseApp
 import com.example.jacobgraves.myapplication.view.model.Raven
 import com.example.jacobgraves.myapplication.view.permissions.RequestPermission
@@ -27,6 +28,8 @@ import kotlinx.android.synthetic.main.activity_new_raven.*
 import kotlinx.android.synthetic.main.popup_delete_raven.*
 import org.json.JSONArray
 import java.io.IOException
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 class NewRaven : AppCompatActivity() {
@@ -149,6 +152,7 @@ class NewRaven : AppCompatActivity() {
                     }
                 }
             }
+
 
          //   startActivity(goBackToMainActivity)
 

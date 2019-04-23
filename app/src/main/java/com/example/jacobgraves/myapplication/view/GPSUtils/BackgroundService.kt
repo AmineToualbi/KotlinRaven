@@ -21,14 +21,20 @@ import android.support.annotation.RequiresApi
 import android.telephony.SmsManager
 import com.example.jacobgraves.myapplication.view.SMSUtils.SMSManager
 import android.app.PendingIntent
+import android.content.SharedPreferences
 import android.graphics.BitmapFactory
 import android.graphics.drawable.Drawable
 import android.os.*
 import android.support.v4.content.ContextCompat
+import android.view.View
 import com.example.jacobgraves.myapplication.view.MainActivity
 import com.example.jacobgraves.myapplication.view.application.DatabaseApp
 import com.example.jacobgraves.myapplication.view.model.Raven
 import com.example.jacobgraves.myapplication.view.providers.IRavenProvider
+import kotlinx.android.synthetic.main.activity_loading.*
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -46,8 +52,13 @@ class BackgroundService : Service() {
     val LOCATION_INTERVAL : Long = 1000
     val LOCATION_DISTANCE : Float = 10f
 
-    //@Inject           //For next update = Raven shut down for certain time.
-   // lateinit var ravenProvider: IRavenProvider
+    companion object {
+        var ravenLockedTimeLeft : Long = 36000000       //Original value corresponds to 10h in ms.
+        var pref : SharedPreferences? = null
+        var editor : SharedPreferences.Editor? = null
+    }
+    @Inject           //For next update = Raven shut down for certain time.
+    lateinit var ravenProvider: IRavenProvider
 
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -99,7 +110,7 @@ class BackgroundService : Service() {
 
                         getRavenSentNotification(MainActivity.ravenArray[i].name)
 
-                      //  lockRaven(MainActivity.ravenArray[i])  //For next update = Raven shut down for certain time.
+                        lockRaven(MainActivity.ravenArray[i])  //For next update = Raven shut down for certain time.
 
                     }
                 }
@@ -150,19 +161,49 @@ class BackgroundService : Service() {
     }
 
     //This function sets a timer for 10 hours & makes the Raven not usable.
-  /*  private fun lockRaven(raven: Raven) {         //For next update = Raven shut down for certain time.
-
-        val minute:Long = 1000 * 60 // 1000 milliseconds = 1 second
-        val millisInFuture:Long =  minute * 1
-        val countDownInterval:Long = 1000
+    private fun lockRaven(raven: Raven) {         //For next update = Raven shut down for certain time.
 
         var lockedRaven = raven
         lockedRaven.usable = false
         ravenProvider.update(lockedRaven)
 
-        timer(millisInFuture,countDownInterval, raven).start()
+        startCountDownLockedRaven(raven)
 
-    } */
+    }
+
+    private fun startCountDownLockedRaven(raven: Raven) {
+
+        //Retrieve lockedRavenTimeLeft from SharedPrefs. If doesn't exist, set to 10 hours.
+        val lockedRavenTimeLeft = pref!!.getLong("lockedRavenTimeLeft", 36000000)
+
+        val timer = object: CountDownTimer(30000,1000) {
+            override fun onTick(millisUntilFinished: Long) {
+                Log.i(TAG, "LockedRavenTimeLeft: " + millisUntilFinished)
+                editor!!.putLong("lockedRavenTimeLeft", millisUntilFinished)
+                editor!!.commit()
+            }
+
+            override fun onFinish() {
+                editor!!.putLong("lockedRavenTimeLeft", 0)
+                editor!!.commit()
+                ravenLockedTimeLeft = 36000000      //10h in ms.
+                unlockRaven(raven)
+                Log.i(TAG, "Raven Unlocked.")
+
+            }
+        }
+
+        timer.start()
+    }
+
+    private fun unlockRaven(raven: Raven) {
+
+        var lockedRaven = raven
+        lockedRaven.usable = true
+        ravenProvider.update(lockedRaven)
+        getRavenUnlockedNotification(raven.name)
+
+    }
 
     /*//Timer function for lockRaven()
     private fun timer(millisInFuture:Long,countDownInterval:Long, raven: Raven):CountDownTimer {
@@ -226,26 +267,21 @@ class BackgroundService : Service() {
     override fun onCreate() {
         Log.i(TAG, "OnCreate")
 
-       /* val channelId =
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    createNotificationChannel("my_service", "My Background Service")
-                } else {
-                    // If earlier version channel ID is not used
-                    // https://developer.android.com/reference/android/support/v4/app/NotificationCompat.Builder.html#NotificationCompat.Builder(android.content.Context)
-                    ""
-                }
-
-        val notificationBuilder = NotificationCompat.Builder(this, channelId )
-        val notification = notificationBuilder.setOngoing(true)
-                .setSmallIcon(R.drawable.ic_lock_idle_alarm)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setCategory(Notification.CATEGORY_SERVICE)
-                .build()*/
-
-       // DatabaseApp.component.injectService(this)     //For next update = Raven shut down for certain time.
-
-
         startForeground(12345678, getNotification())
+
+        pref = applicationContext.getSharedPreferences("MyPref", Context.MODE_PRIVATE)
+        editor = pref!!.edit()
+
+        DatabaseApp.component.injectService(this)     //For next update = Raven shut down for certain time.
+
+        for(i in 0 .. (MainActivity.ravenArray.size-1)) {
+
+            //MaxValue is used as a placeholder notifying empty ravens.
+            if (MainActivity.ravenArray[i].usable == false) {
+                startCountDownLockedRaven(MainActivity.ravenArray[i])
+            }
+        }
+
 
     }
 
@@ -329,6 +365,28 @@ class BackgroundService : Service() {
                 .build()
 
          notificationManager!!.notify(101, mBuilder)
+
+    }
+
+    @TargetApi(Build.VERSION_CODES.O)
+    fun getRavenUnlockedNotification(name: String) {
+
+        var channel = NotificationChannel("channel_03", "My Channel2", NotificationManager.IMPORTANCE_HIGH)
+
+        notificationManager = getSystemService(NotificationManager::class.java)
+        notificationManager!!.createNotificationChannel(channel)
+
+        var notifBuilder = NotificationCompat.Builder(this, "channel_03")
+
+        var mBuilder = notifBuilder.setOngoing(false)
+                .setSmallIcon(R.drawable.alert_light_frame)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(Notification.CATEGORY_REMINDER)
+                .setContentTitle("Raven")
+                .setContentText(name + "'s Raven is unlocked and usable.")
+                .build()
+
+        notificationManager!!.notify(101, mBuilder)
 
     }
 

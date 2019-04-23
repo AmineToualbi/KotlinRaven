@@ -307,7 +307,7 @@ class MainActivity : AppCompatActivity() {
         var jsonArray = JSONArray(jsonData)
 
         var nameArray = arrayOfNulls<String>(3)
-       // var usableArray = arrayOfNulls<Boolean>(3)        //For next update = Raven shut down for certain time.
+        var usableArray = arrayOfNulls<Boolean>(3)        //For next update = Raven shut down for certain time.
 
         for (jsonIndex in 0..(jsonArray.length() - 1)) {
 
@@ -315,7 +315,7 @@ class MainActivity : AppCompatActivity() {
 
                 Log.d("JSON", jsonArray.getJSONObject(jsonIndex).getString("name"))
                 nameArray[jsonIndex] = jsonArray.getJSONObject(jsonIndex).getString("name")
-               // usableArray[jsonIndex] = jsonArray.getJSONObject(jsonIndex).getBoolean("usable") //For next update = Raven shut down for certain time.
+                usableArray[jsonIndex] = jsonArray.getJSONObject(jsonIndex).getBoolean("usable") //For next update = Raven shut down for certain time.
 
             }
 
@@ -325,24 +325,24 @@ class MainActivity : AppCompatActivity() {
         if (currentName.text.equals("")) {
             currentName.text = "No Raven"
         }
-        /*else if(usableArray[0] == false) {        //For next update = Raven shut down for certain time.
+        else if(usableArray[0] == false) {        //For next update = Raven shut down for certain time.
             currentName.text = nameArray[0] + " (OFF)"
             Log.i(TAG, "Raven is set to RED.")
-        }*/
+        }
         currentName2.text = nameArray[1]
         if (currentName2.text.equals("")) {
             currentName2.text = "No Raven"
         }
-       /* else if(usableArray[1] == false) {    //For next update = Raven shut down for certain time.
+       else if(usableArray[1] == false) {    //For next update = Raven shut down for certain time.
             currentName.setTextColor(Color.RED)
-        }*/
+        }
         currentName3.text = nameArray[2]
         if (currentName3.text.equals("")) {
             currentName3.text = "No Raven"
         }
-       /* else if(usableArray[2] == false) {        //For next update = Raven shut down for certain time.
+        else if(usableArray[2] == false) {        //For next update = Raven shut down for certain time.
             currentName.setTextColor(Color.RED)
-        }*/
+        }
 
         Log.i(TAG, "CurrentLongitude: " + currentLongitude + " CurrentLatitude: " + currentLatitude)
         myLongitude.text = "Longitude: " + roundCoordinates(currentLongitude) + "°"
