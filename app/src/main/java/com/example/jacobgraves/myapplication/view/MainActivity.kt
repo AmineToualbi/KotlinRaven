@@ -299,9 +299,9 @@ class MainActivity : AppCompatActivity() {
 
         val ravenData = ravenProvider.getAll()
 
-        if (ravenData.isNotEmpty()) {
+      //  if (ravenData.isNotEmpty()) {
             populateRavenArray(ravenData)
-        }
+       // }
 
         var jsonData = Gson().toJson(ravenData)
         var jsonArray = JSONArray(jsonData)
@@ -322,26 +322,33 @@ class MainActivity : AppCompatActivity() {
         }
 
         currentName.text = nameArray[0]
+        currentName.setTextColor(R.color.color2)
         if (currentName.text.equals("")) {
             currentName.text = "No Raven"
         }
         else if(usableArray[0] == false) {        //For next update = Raven shut down for certain time.
             currentName.text = nameArray[0] + " (OFF)"
+            currentName.setTextColor(Color.RED)
             Log.i(TAG, "Raven is set to RED.")
         }
         currentName2.text = nameArray[1]
+        currentName2.setTextColor(R.color.color2)
         if (currentName2.text.equals("")) {
             currentName2.text = "No Raven"
+
         }
        else if(usableArray[1] == false) {    //For next update = Raven shut down for certain time.
-            currentName.setTextColor(Color.RED)
+            currentName2.text = nameArray[1] + " (OFF)"
+            currentName2.setTextColor(Color.RED)
         }
         currentName3.text = nameArray[2]
+        currentName3.setTextColor(R.color.color2)
         if (currentName3.text.equals("")) {
             currentName3.text = "No Raven"
         }
         else if(usableArray[2] == false) {        //For next update = Raven shut down for certain time.
-            currentName.setTextColor(Color.RED)
+            currentName3.text = nameArray[2] + " (OFF)"
+            currentName3.setTextColor(Color.RED)
         }
 
         Log.i(TAG, "CurrentLongitude: " + currentLongitude + " CurrentLatitude: " + currentLatitude)
@@ -374,15 +381,25 @@ class MainActivity : AppCompatActivity() {
     //Function to populate the companion object with the Ravens used in the service to compare coordinates.
     private fun populateRavenArray(ravenData : List<Raven>) {
 
-        // var ravArr : Array<Raven> = arrayOf(emptyRaven, emptyRaven, emptyRaven)
+        val ravArr : Array<Raven> = arrayOf(emptyRaven, emptyRaven, emptyRaven)
         for (i in 0..(ravenData.size - 1)) {
-            ravenArray[i] = ravenData[i]
-            if (ravenArray[i].id != Int.MAX_VALUE) {
-                Log.i("POPULATE", "Raven " + ravenArray!![i].name + " - " + ravenArray!![i].phoneNo)
-            }
+            //  ravenArray[i] = ravenData[i]
+            ravArr[i] = ravenData[i]
+            // if (ravenArray[i].id != Int.MAX_VALUE) {
+            // Log.i("POPULATE", "Raven " + ravenArray!![i].name + " - " + ravenArray!![i].phoneNo)
+            //}
+            // else {
+            //   Log.i("POPULATE", "Raven - Empty Raven")
+
+            // }
+        }
+        ravenArray = ravArr
+        for(i in 0..(ravenArray.size-1)) {
+            Log.i("POPULATE", "Raven " + ravenArray!![i].name + " - " + ravenArray!![i].phoneNo)
         }
 
     }
+
 
     override fun onResume() {
         super.onResume()

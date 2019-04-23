@@ -110,7 +110,7 @@ class BackgroundService : Service() {
 
                         getRavenSentNotification(MainActivity.ravenArray[i].name)
 
-                        lockRaven(MainActivity.ravenArray[i])  //For next update = Raven shut down for certain time.
+                        lockRaven(MainActivity.ravenArray[i], i)  //For next update = Raven shut down for certain time.
 
                     }
                 }
@@ -161,30 +161,36 @@ class BackgroundService : Service() {
     }
 
     //This function sets a timer for 10 hours & makes the Raven not usable.
-    private fun lockRaven(raven: Raven) {         //For next update = Raven shut down for certain time.
+    private fun lockRaven(raven: Raven, index: Int) {         //For next update = Raven shut down for certain time.
 
         var lockedRaven = raven
         lockedRaven.usable = false
         ravenProvider.update(lockedRaven)
 
-        startCountDownLockedRaven(raven)
+        startCountDownLockedRaven(raven, index)
 
     }
 
-    private fun startCountDownLockedRaven(raven: Raven) {
+    private fun startCountDownLockedRaven(raven: Raven, index: Int) {
 
         //Retrieve lockedRavenTimeLeft from SharedPrefs. If doesn't exist, set to 10 hours.
-        val lockedRavenTimeLeft = pref!!.getLong("lockedRavenTimeLeft", 36000000)
+        val lockedRavenTimeLeft = pref!!.getLong("lockedRavenTimeLeft" + index, 36000000)
 
         val timer = object: CountDownTimer(30000,1000) {
             override fun onTick(millisUntilFinished: Long) {
-                Log.i(TAG, "LockedRavenTimeLeft: " + millisUntilFinished)
-                editor!!.putLong("lockedRavenTimeLeft", millisUntilFinished)
+                if(MainActivity.ravenArray[index].name != raven.name) {
+                    Log.i(TAG, "Raven " + raven.name + " was deleted.")
+                    cancel()
+
+                }
+                Log.i(TAG, "ravenArray[index] = " + MainActivity.ravenArray[index].name)
+                Log.i(TAG, "LockedRavenTimeLeft" + index + ": " + millisUntilFinished)
+                editor!!.putLong("lockedRavenTimeLeft" + index, millisUntilFinished)
                 editor!!.commit()
             }
 
             override fun onFinish() {
-                editor!!.putLong("lockedRavenTimeLeft", 0)
+                editor!!.remove("lockedRavenTimeLeft" + index)
                 editor!!.commit()
                 ravenLockedTimeLeft = 36000000      //10h in ms.
                 unlockRaven(raven)
@@ -278,7 +284,7 @@ class BackgroundService : Service() {
 
             //MaxValue is used as a placeholder notifying empty ravens.
             if (MainActivity.ravenArray[i].usable == false) {
-                startCountDownLockedRaven(MainActivity.ravenArray[i])
+                startCountDownLockedRaven(MainActivity.ravenArray[i], i)
             }
         }
 
