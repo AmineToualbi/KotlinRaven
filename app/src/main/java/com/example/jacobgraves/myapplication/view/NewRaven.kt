@@ -138,6 +138,9 @@ class NewRaven : AppCompatActivity() {
                     //Get correct ID for new Raven in DB.
                     var newRavenID = updatedRavenID(ravenData)
 
+
+                    Log.i(TAG, "Raven Saved ID " + newRavenID)
+
                     //Save Raven with correct ID.
                     saveRaven(newRavenID, goBackToMainActivity)
 
@@ -198,7 +201,8 @@ class NewRaven : AppCompatActivity() {
 
         //If there's only 1 Raven stored -> add the Raven right after.
         if(ravenData.size == 1) {
-            updatedRavenID = ravenData.lastIndex + 1
+            val onlyRavenIndex= ravenData.lastIndex
+            updatedRavenID = ravenData[onlyRavenIndex].id + 1
             return updatedRavenID
         }
 
@@ -225,6 +229,8 @@ class NewRaven : AppCompatActivity() {
             updatedRavenID = 0
         }
 
+        Log.i(TAG, "UpdatedRavenID is " + updatedRavenID)
+
         return updatedRavenID
 
     }
@@ -244,7 +250,7 @@ class NewRaven : AppCompatActivity() {
         validGeo = false
         addresses = emptyList()
 
-        Log.i(TAG, "Raven Created " + raven.name + " - ")
+        Log.i(TAG, "Raven Created " + raven.name + " - " + raven.id)
 
         startActivity(goBackToMainActivity)
     }

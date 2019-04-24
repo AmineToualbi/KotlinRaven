@@ -284,7 +284,7 @@ class BackgroundService : Service() {
                 .setCategory(Notification.CATEGORY_MESSAGE)
                 .setContentTitle("Raven")
                 .setContentText("A raven was sent to " + name + ".")
-                .setSubText("The Raven is now disabled for 10 hours")
+                .setSubText("The raven is now deleted.")
                 .build()
 
          notificationManager!!.notify(101, mBuilder)

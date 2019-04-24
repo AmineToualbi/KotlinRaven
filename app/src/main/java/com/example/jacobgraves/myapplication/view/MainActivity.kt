@@ -382,7 +382,7 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Service not available.", Toast.LENGTH_SHORT).show()
         }
         catch(e: IllegalArgumentException) {
-            Toast.makeText(this, "Invalid lat/long", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Location Unavailable", Toast.LENGTH_SHORT).show()
         }
 
     }
