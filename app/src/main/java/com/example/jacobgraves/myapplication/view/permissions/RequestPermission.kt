@@ -16,7 +16,7 @@ class RequestPermission(val activity: Activity, val list: List<String>, val code
         if (isPermissionsGranted() != PackageManager.PERMISSION_GRANTED) {
             showAlert()
         } else {
-            activity.toast("Permissions already granted.")
+            //activity.toast("Permissions already granted.")
         }
     }
 

@@ -443,6 +443,7 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+
     override fun onResume() {
         super.onResume()
         updateUI()
@@ -453,6 +454,8 @@ class MainActivity : AppCompatActivity() {
     private fun Context.toast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
+
+
 
     //This function disables the back button.
     override fun onBackPressed() {

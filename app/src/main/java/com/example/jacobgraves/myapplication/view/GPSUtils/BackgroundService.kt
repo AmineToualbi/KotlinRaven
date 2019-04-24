@@ -40,82 +40,103 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 
+//Class handling the Foreground Service used to update GPS location in the background of the app & act in function.
 class BackgroundService : Service() {
 
+
     val binder : LocationServiceBinder = LocationServiceBinder()
+
     val TAG = "BackgroundService"
+
     var mLocationListener : LocationListener? = null
     var mLocationManager : LocationManager? = null
+
     var notificationManager : NotificationManager? = null
+
     var smsManager = SMSManager()
 
-    val LOCATION_INTERVAL : Long = 1000
-    val LOCATION_DISTANCE : Float = 10f
+    val LOCATION_INTERVAL : Long = 1000         //Update every second.
+    val LOCATION_DISTANCE : Float = 10f         //Update every 10 meters.
 
     companion object {
         var ravenLockedTimeLeft : Long = 36000000       //Original value corresponds to 10h in ms.
-        var pref : SharedPreferences? = null
-        var editor : SharedPreferences.Editor? = null
+        var pref : SharedPreferences? = null            //Persistent storage of locked time.
+        var editor : SharedPreferences.Editor? = null       //Editor for pref.
     }
-    @Inject           //For next update = Raven shut down for certain time.
+
+    //Inject database provider.
+    @Inject
     lateinit var ravenProvider: IRavenProvider
+
+    val tenHoursInMin : Long = 30000
 
 
     override fun onBind(intent: Intent?): IBinder? {
         return binder
     }
 
+
+    //Specialized LocationListener for the Service.
     inner class LocationListener(provider: String) : android.location.LocationListener {
 
         var lastLocation: Location? = null
         var mLastLocation: Location? = null
+
 
         init {
             mLastLocation = Location(provider)
             Log.i(TAG, "LOCATION LISTENER CREATED.")
         }
 
+
         override fun onLocationChanged(location: Location?) {
+
             mLastLocation = location!!
             Log.i(TAG, "LocationChanged " + location)
 
-            MainActivity.currentLongitude = location.longitude
-            MainActivity.currentLatitude = location.latitude
+            //Get rounded value of GPS coordinates.
+            val roundedLongitude = roundCoordinates(location.longitude)
+            val roundedLatitude = roundCoordinates(location.latitude)
 
-            val roundedLongitude = roundCoordinatesToOneDecimal(location.longitude)
-            val roundedLatitude = roundCoordinatesToOneDecimal(location.latitude)
+            //Notify MainActivity of GPS change.
+            MainActivity.currentLongitude = roundedLongitude
+            MainActivity.currentLatitude = roundedLatitude
 
             Log.i(TAG, "Location: " + roundedLongitude + " - " + roundedLatitude)
-            Log.i(TAG, "Raven Location: " + roundCoordinatesToOneDecimal(MainActivity.ravenArray[0].longitude) + " - " +
-                    roundCoordinatesToOneDecimal(MainActivity.ravenArray[0].latitude))
+            Log.i(TAG, "Raven Location: " + roundCoordinates(MainActivity.ravenArray[0].longitude) + " - " +
+                    roundCoordinates(MainActivity.ravenArray[0].latitude))
 
+            //Go through the Ravens stored in ravenArray.
             for(i in 0 .. (MainActivity.ravenArray.size-1)) {
 
                 //MaxValue is used as a placeholder notifying empty ravens.
                 if(MainActivity.ravenArray[i].id != Int.MAX_VALUE) {
 
-                    val distanceToRavenLocation = distanceBetweenLocations(MainActivity.currentLatitude,
-                            MainActivity.currentLongitude, MainActivity.ravenArray[i].latitude,
+                    //Get distance between user location & final location of raven.
+                    val distanceToRavenLocation = distanceBetweenLocations(location.latitude,
+                            location.longitude, MainActivity.ravenArray[i].latitude,
                             MainActivity.ravenArray[i].longitude)
 
+                    //If user is close to final location -> send SMS, push notification, & lock raven.
                     if(userInRange(distanceToRavenLocation) == true) {
-
 
                         val intent = Intent(applicationContext, BackgroundService::class.java)
                         val pi = PendingIntent.getActivity(applicationContext, 0, intent, 0)
 
                         Log.i(TAG, "SENDMSG TO " + MainActivity.ravenArray[i].phoneNo)
+
                         smsManager.sendSMS(MainActivity.ravenArray[i].phoneNo,
                                 MainActivity.ravenArray[i].message, pi)
 
                         getRavenSentNotification(MainActivity.ravenArray[i].name)
 
-                        lockRaven(MainActivity.ravenArray[i], i)  //For next update = Raven shut down for certain time.
+                        lockRaven(MainActivity.ravenArray[i], i)
 
                     }
                 }
             }
         }
+
 
         override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
             Log.i(TAG, "onStatusChanged " + status)
@@ -130,6 +151,7 @@ class BackgroundService : Service() {
         }
 
     }
+
 
     //Returns distance in KM.
     private fun distanceBetweenLocations(lat1: Double, long1: Double, lat2: Double, long2: Double) : Double {
@@ -160,26 +182,40 @@ class BackgroundService : Service() {
         return false
     }
 
-    //This function sets a timer for 10 hours & makes the Raven not usable.
-    private fun lockRaven(raven: Raven, index: Int) {         //For next update = Raven shut down for certain time.
+
+    //This function sets a timer for 10 hours & makes the Raven not usable/
+    private fun lockRaven(raven: Raven, index: Int) {
 
         var lockedRaven = raven
         lockedRaven.usable = false
         ravenProvider.update(lockedRaven)
 
+        if(index == 0)
         startCountDownLockedRaven(raven, index)
+        else if(index == 1)
+            startCountDownLockedRaven1(raven, index)
+
 
     }
 
+    //Countdown for 10 hours for raven corresponding to index.
     private fun startCountDownLockedRaven(raven: Raven, index: Int) {
 
         //Retrieve lockedRavenTimeLeft from SharedPrefs. If doesn't exist, set to 10 hours.
-        val lockedRavenTimeLeft = pref!!.getLong("lockedRavenTimeLeft" + index, 36000000)
+        editor!!.putLong("lockedRavenTimeLeft" + index, 60000)
+        editor!!.commit()
+        val lockedRavenTimeLeft = pref!!.getLong("lockedRavenTimeLeft" + index, 30000)
+        //val lockedRavenTimeLeft : Long = 30000
+        Log.i(TAG, "LockedRavenTimeLeft @ start " + index + ": " + lockedRavenTimeLeft)
 
-        val timer = object: CountDownTimer(30000,1000) {
+//36000000
+        val timer = object: CountDownTimer(lockedRavenTimeLeft,1000) {    //Change 30s to lockedRavenTimeLeft
             override fun onTick(millisUntilFinished: Long) {
                 if(MainActivity.ravenArray[index].name != raven.name) {
                     Log.i(TAG, "Raven " + raven.name + " was deleted.")
+                    editor!!.putLong("lockedRavenTimeLeft" + index, tenHoursInMin)
+                    editor!!.commit()
+                    Log.i(TAG, "LockedRavenTimeLeft deleted " + index + ": " + pref!!.getLong("lockedRavenTimeLeft" + index,0))
                     cancel()
 
                 }
@@ -192,7 +228,7 @@ class BackgroundService : Service() {
             override fun onFinish() {
                 editor!!.remove("lockedRavenTimeLeft" + index)
                 editor!!.commit()
-                ravenLockedTimeLeft = 36000000      //10h in ms.
+              //  ravenLockedTimeLeft = 36000000      //10h in ms.
                 unlockRaven(raven)
                 Log.i(TAG, "Raven Unlocked.")
 
@@ -200,6 +236,50 @@ class BackgroundService : Service() {
         }
 
         timer.start()
+
+
+    }
+    
+    //Countdown for 10 hours for raven corresponding to index.
+    private fun startCountDownLockedRaven1(raven: Raven, index: Int) {
+
+        //Retrieve lockedRavenTimeLeft from SharedPrefs. If doesn't exist, set to 10 hours.
+        editor!!.putLong("lockedRavenTimeLeft" + index, 60000)
+        editor!!.commit()
+        val lockedRavenTimeLeft = pref!!.getLong("lockedRavenTimeLeft" + index, 30000)
+        //val lockedRavenTimeLeft : Long = 30000
+        Log.i(TAG, "LockedRavenTimeLeft @ start " + index + ": " + lockedRavenTimeLeft)
+
+//36000000
+        val timer = object: CountDownTimer(lockedRavenTimeLeft,1000) {    //Change 30s to lockedRavenTimeLeft
+            override fun onTick(millisUntilFinished: Long) {
+                if(MainActivity.ravenArray[index].name != raven.name) {
+                    Log.i(TAG, "Raven " + raven.name + " was deleted.")
+                    editor!!.putLong("lockedRavenTimeLeft" + index, tenHoursInMin)
+                    editor!!.commit()
+                    Log.i(TAG, "LockedRavenTimeLeft deleted " + index + ": " + pref!!.getLong("lockedRavenTimeLeft" + index,0))
+                    cancel()
+
+                }
+                Log.i(TAG, "ravenArray[index] = " + MainActivity.ravenArray[index].name)
+                Log.i(TAG, "LockedRavenTimeLeft" + index + ": " + millisUntilFinished)
+                editor!!.putLong("lockedRavenTimeLeft" + index, millisUntilFinished)
+                editor!!.commit()
+            }
+
+            override fun onFinish() {
+                editor!!.remove("lockedRavenTimeLeft" + index)
+                editor!!.commit()
+                //  ravenLockedTimeLeft = 36000000      //10h in ms.
+                unlockRaven(raven)
+                Log.i(TAG, "Raven Unlocked.")
+
+            }
+        }
+
+        timer.start()
+
+
     }
 
     private fun unlockRaven(raven: Raven) {
@@ -396,12 +476,28 @@ class BackgroundService : Service() {
 
     }
 
-    fun roundCoordinatesToOneDecimal(coordinate: Double) : Double{
+   /* fun roundCoordinatesToOneDecimal(coordinate: Double) : Double{
         val number3digits:Double = String.format("%.3f", coordinate).toDouble()
         val number2digits:Double = String.format("%.2f", number3digits).toDouble()
         val solution:Double = String.format("%.1f", number2digits).toDouble()
         return solution
+    }*/
+
+    //Function to round coordinates to 2 decimal points.
+    private fun roundCoordinates(coordinate: Double?): Double {
+
+        val result = String.format("%.2f", coordinate)
+        var roundedValue = 0.0
+        try {
+            roundedValue = java.lang.Double.parseDouble(result)
+        }
+        catch (ex: NumberFormatException) {
+        }
+
+        return roundedValue
+
     }
+
 
 
     inner class LocationServiceBinder : Binder() {

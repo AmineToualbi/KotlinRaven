@@ -63,31 +63,41 @@ class NewRaven : AppCompatActivity() {
         var appRunning = false
     }
 
+    //Tag String for testing & logging.
     val TAG = "NewRaven"
 
+    //List that will contain the current address "reverse geocoded" by the geocoder.
     var addresses: List<Address> = emptyList()
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_new_raven)
 
+
+        //Access to app db.
         DatabaseApp.component.inject(this)
 
+        //Initialize popup.
         overwritePopupDialog = Dialog(this)
         overwritePopupDialog.findViewById<View>(R.layout.popup_delete_raven)
 
+        //Intent to go back to MainActivity.
         val goBackToMainActivity: Intent = Intent(applicationContext, MainActivity::class.java)
 
-
+        //Permissions.
         val permissionList = listOf<String>(
                 Manifest.permission.ACCESS_COARSE_LOCATION,
                 Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.SEND_SMS
         )
 
+        //RequestPermission object.
         req_permission = RequestPermission(this,permissionList,PermissionsRequestCode)
 
 
+        //Confirm action:
         validButton.setOnClickListener {
 
             ravenName = enteredName.text.toString()
@@ -95,6 +105,7 @@ class NewRaven : AppCompatActivity() {
             ravenAddress = enteredAddress.text.toString()
             ravenMessage = enteredMessage.text.toString()
 
+            //Get address that the user typed in.
             try {
                 addresses = Geocoder(this).getFromLocationName(ravenAddress,1)
             }
@@ -102,6 +113,7 @@ class NewRaven : AppCompatActivity() {
                 Toast.makeText(this, "Invalid Address", Toast.LENGTH_SHORT).show()
             }
 
+            //If a location was found for the address entered -> store the coordinates.
             if(addresses.isNotEmpty()) {
                 ravenLongitude = addresses.get(0).longitude
                 ravenLatitude = addresses.get(0).latitude
@@ -109,13 +121,16 @@ class NewRaven : AppCompatActivity() {
                 Log.i(TAG, "Longitude: " + ravenLongitude + " Latitude: " + ravenLatitude)
             }
 
+
+            //Check if user forgot to fill a field.
             if(isValid(ravenName, ravenPhoneNo, ravenAddress, ravenMessage) == false) {
                 Toast.makeText(this, "Please fill all the field.", Toast.LENGTH_LONG).show()
             }
 
+            //User successfully filled all the fields.
             else {
 
-                val ravenData = ravenProvider.getAll()
+                val ravenData = ravenProvider.getAll()      //Retrieve the ravens already stored.
 
                 //Check if 3 ravens are already stored. False => No, we have less than 3 stored.
                 if(checkRavenOverwrite(ravenData) == false) {
@@ -128,10 +143,12 @@ class NewRaven : AppCompatActivity() {
 
                 }
 
-                else {
+                else {                  //3 ravens are already stored -> overwrite.
 
-                    //Overwrite oldest Raven.
+                    //The ID of the new raven to save.
                     var overwrittenRavenID = MainActivity.ravenID%3
+
+                    //Overwrite popup.
                     showOverwriteRavenPopup(overwrittenRavenID, ravenData, goBackToMainActivity)
 
                 }
@@ -140,9 +157,12 @@ class NewRaven : AppCompatActivity() {
 
         }
 
+
+        //Cancel action:
         cancelButton.setOnClickListener {
 
-            val ravenData = ravenProvider.getAll()
+           /*  Showing the content of RavenData retrieved from the database for TESTING.
+           val ravenData = ravenProvider.getAll()
 
             if(ravenData == null || ravenData.isEmpty()) {
                 showMessage("No data!")
@@ -158,10 +178,9 @@ class NewRaven : AppCompatActivity() {
                         Log.d("JSON", jsonArray.getJSONObject(jsonIndex).getString("name"))
                     }
                 }
-            }
+            }*/
 
-
-         //   startActivity(goBackToMainActivity)
+            startActivity(goBackToMainActivity)
 
         }
 
@@ -211,6 +230,7 @@ class NewRaven : AppCompatActivity() {
     }
 
 
+    //Function to save new raven to the database.
     private fun saveRaven(newRavenID: Int, goBackToMainActivity: Intent) {
 
         val raven: Raven = Raven(newRavenID, ravenName.toString(),
@@ -228,6 +248,7 @@ class NewRaven : AppCompatActivity() {
     }
 
 
+    //Function to check if there needs to be an overwrite of an existing Raven.
     private fun checkRavenOverwrite(ravenData: List<Raven>) : Boolean {
 
         if(ravenData.size > 2) {
@@ -238,21 +259,24 @@ class NewRaven : AppCompatActivity() {
     }
 
 
+    //Function to display the popup asking to overwrite a Raven.
     private fun showOverwriteRavenPopup(overwrittenRavenID: Int, ravenData: List<Raven>, goBackToMainActivity: Intent) {
 
+        //Display popup.
         overwritePopupDialog.setContentView(R.layout.popup_delete_raven)
-
         var transparentColor = ColorDrawable(Color.TRANSPARENT)
         overwritePopupDialog.window.setBackgroundDrawable(transparentColor)
         overwritePopupDialog.show()
 
+        //Initialize buttons to avoid NPE.
         var closePopupBtn: ImageButton = overwritePopupDialog.findViewById(R.id.closePopup)
         var deleteBtn: Button = overwritePopupDialog.findViewById(R.id.deleteBtn)
+
+        //Edit original popup for our purposes.
         deleteBtn.text = "Overwrite"
         var popupTextView: TextView = overwritePopupDialog.findViewById(R.id.popupText)
         popupTextView.text = "Three Ravens are already stored. Are you sure you want to override " +
                 ravenData[overwrittenRavenID].name + "'s Raven?"
-
 
         closePopupBtn.setOnClickListener {
 
@@ -260,6 +284,7 @@ class NewRaven : AppCompatActivity() {
 
         }
 
+        //Confirm the overwrite -> delete raven & save new one.
         deleteBtn.setOnClickListener {
 
             ravenProvider.delete(ravenData[overwrittenRavenID])
@@ -270,6 +295,8 @@ class NewRaven : AppCompatActivity() {
 
     }
 
+
+    //Function to check if all fields are filled. If not -> color them red.
     private fun isValid(name: String?, phoneNo: String?, address: String?, message: String?): Boolean {
 
         if(name.isNullOrEmpty()) {
@@ -311,9 +338,11 @@ class NewRaven : AppCompatActivity() {
 
     }
 
+
+    /* TESTING function.
     private fun showMessage(message: String) {
 
         AlertDialog.Builder(this).setMessage(message).create().show()
 
-    }
+    }*/
 }
