@@ -161,7 +161,7 @@ class NewRaven : AppCompatActivity() {
         //Cancel action:
         cancelButton.setOnClickListener {
 
-           /*  Showing the content of RavenData retrieved from the database for TESTING.
+           //  Showing the content of RavenData retrieved from the database for TESTING.
            val ravenData = ravenProvider.getAll()
 
             if(ravenData == null || ravenData.isEmpty()) {
@@ -173,14 +173,14 @@ class NewRaven : AppCompatActivity() {
                 showMessage(jsonData)
                 var jsonArray = JSONArray(jsonData)
 
-                for(jsonIndex in 0..(jsonArray.length()-1)) {
-                    if(jsonIndex < MAX_NBR_OF_RAVENS) {
+                for (jsonIndex in 0..(jsonArray.length() - 1)) {
+                    if (jsonIndex < MAX_NBR_OF_RAVENS) {
                         Log.d("JSON", jsonArray.getJSONObject(jsonIndex).getString("name"))
                     }
                 }
-            }*/
+            }
 
-            startActivity(goBackToMainActivity)
+           // startActivity(goBackToMainActivity)
 
         }
 
@@ -243,6 +243,8 @@ class NewRaven : AppCompatActivity() {
         Toast.makeText(this, "Raven created.", Toast.LENGTH_SHORT).show()
         validGeo = false
         addresses = emptyList()
+
+        Log.i(TAG, "Raven Created " + raven.name + " - ")
 
         startActivity(goBackToMainActivity)
     }
@@ -339,10 +341,10 @@ class NewRaven : AppCompatActivity() {
     }
 
 
-    /* TESTING function.
+    // TESTING function.
     private fun showMessage(message: String) {
 
         AlertDialog.Builder(this).setMessage(message).create().show()
 
-    }*/
+    }
 }

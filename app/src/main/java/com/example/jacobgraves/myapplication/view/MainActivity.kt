@@ -296,6 +296,7 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "Raven deleted.", Toast.LENGTH_SHORT).show()
                 updateUI()
                 deletePopupDialog.dismiss()
+
             }
 
         }
