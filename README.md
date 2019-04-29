@@ -19,13 +19,24 @@ The Play Services API is used for tracking the location of the user and for geoc
 
 A Foreground Service is used to allow for work in the background fo the app. Mainly, the app tracks the location in the background and sends a message when the user reached the given location. On the side, the Ravens are also deleted and manipulated in the background. 
 
+The app uses Notifications to communicate and interface effectively with the user at all times. When the app is tracking the location, a notification is shown, when a Raven is sent, a notification is shown, when a Raven is deleted, a notification is shown. 
+
+The app also has the option to be turned off. This allows to stop the tracking of the location and save battery when the app is not needed. 
+
 # UI
 
 ![alt text](http://image.noelshack.com/fichiers/2019/18/1/1556563468-raven1.png)
 
-![alt text](https://image.noelshack.com/fichiers/2018/33/7/1534705148-screenshot-1.png)
+![alt text](http://image.noelshack.com/fichiers/2019/18/1/1556563468-raven2.png)
 
-![alt text](https://image.noelshack.com/fichiers/2018/33/7/1534705148-screenshot-3.png)
+![alt text](http://image.noelshack.com/fichiers/2019/18/1/1556563468-raven3.png)
+
+![alt text](http://image.noelshack.com/fichiers/2019/18/1/1556563468-raven4.png)
+
+![alt text](http://image.noelshack.com/fichiers/2019/18/1/1556563468-raven5.png)
+
+![alt text](http://image.noelshack.com/fichiers/2019/18/1/1556563468-raven6.png)
+
 
 
 
