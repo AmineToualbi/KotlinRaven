@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="300" height="300" src="https://github.com/AmineToualbi/Raven/blob/master/app/src/main/res/drawable/ravenlogo.png">
+  <img width="300" height="150" src="https://github.com/AmineToualbi/Raven/blob/master/app/src/main/res/drawable/ravenlogo.png">
 </p>
 
 # Raven
