@@ -1,3 +1,7 @@
+<p align="center">
+  <img width="150" height="150" src="https://github.com/AmineToualbi/Raven/blob/master/app/src/main/res/drawable/ravenlogo.png">
+</p>
+
 # Raven
 
 Raven is meant to be a non-invasive GPS monitoring app targeted towards parents and children. 
