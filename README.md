@@ -47,3 +47,4 @@ The app also has the option to be turned off. This allows to stop the tracking o
 Because Google doesn't anymore allow the use of the SEND_SMS permission in apps published to the Google Play Store, I was not able to publish Raven. 
 Because of the lack of funding, I am not able to afford a third-party API such as Twilio to handle text messaging functionalities in my app. 
 Maybe in the future, I will implement an authentication system using Firebase. Cloud messaging will allow to directly send a push notification to a targeted phone which solves the issue of sending an SMS. It will require more work and some tweaks in the app.  
+Another possibility would be to allow user to select carrier of the phone number to send to & use email to send a SMS. Could use: https://github.com/yesidlazaro/GmailBackground
