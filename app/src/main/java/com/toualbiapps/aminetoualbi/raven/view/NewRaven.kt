@@ -19,6 +19,7 @@ import com.toualbiapps.aminetoualbi.raven.view.model.Raven
 import com.toualbiapps.aminetoualbi.raven.view.permissions.RequestPermission
 import com.toualbiapps.aminetoualbi.raven.view.providers.IRavenProvider
 import com.google.gson.Gson
+import com.toualbiapps.aminetoualbi.raven.view.Common.Common
 import kotlinx.android.synthetic.main.activity_new_raven.*
 import org.json.JSONArray
 import java.io.IOException
@@ -29,6 +30,7 @@ class NewRaven : AppCompatActivity(), AdapterView.OnItemSelectedListener {
     //Fields used to create Ravens.
     var ravenName: String? = null
     var ravenPhoneNo: String? = null
+    var ravenCarrier: String? = null
     var ravenAddress: String? = null
     var ravenLongitude: Double = 0.0
     var ravenLatitude: Double = 0.0
@@ -40,7 +42,6 @@ class NewRaven : AppCompatActivity(), AdapterView.OnItemSelectedListener {
 
     private val PermissionsRequestCode = 456
     private lateinit var req_permission: RequestPermission
-
 
     //Database:
     @Inject
@@ -61,22 +62,21 @@ class NewRaven : AppCompatActivity(), AdapterView.OnItemSelectedListener {
     //List that will contain the current address "reverse geocoded" by the geocoder.
     var addresses: List<Address> = emptyList()
 
-    var carriers = arrayOf("T-Mobile", "AT&T", "Sprint")
-    var spinner: Spinner? = null
+    var carrierSpinner: Spinner? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_new_raven)
 
-        spinner = findViewById(R.id.enteredCarrier) as Spinner
-        spinner!!.setOnItemSelectedListener(this)
+        carrierSpinner = findViewById(R.id.enteredCarrier) as Spinner
+        carrierSpinner!!.setOnItemSelectedListener(this)
 
         // Create an ArrayAdapter using a simple spinner layout and languages array
-        val aa = ArrayAdapter(this, android.R.layout.simple_spinner_item, carriers)
+        val aa = ArrayAdapter(this, android.R.layout.simple_spinner_item, Common.carriers)
         // Set layout to use when the list of choices appear
         aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         // Set Adapter to Spinner
-        spinner!!.setAdapter(aa)
+        carrierSpinner!!.setAdapter(aa)
 
         //Access to app db.
         DatabaseApp.component.inject(this)
@@ -103,6 +103,7 @@ class NewRaven : AppCompatActivity(), AdapterView.OnItemSelectedListener {
 
             ravenName = enteredName.text.toString()
             ravenPhoneNo = enteredNumber.text.toString()
+            ravenCarrier = carrierSpinner!!.selectedItem.toString()
             ravenAddress = enteredAddress.text.toString()
             ravenMessage = enteredMessage.text.toString()
 
@@ -247,7 +248,7 @@ class NewRaven : AppCompatActivity(), AdapterView.OnItemSelectedListener {
     private fun saveRaven(newRavenID: Int, goBackToMainActivity: Intent) {
 
         val raven: Raven = Raven(newRavenID, ravenName.toString(),
-                ravenPhoneNo.toString(), "Sprint", ravenMessage.toString(), ravenLongitude, ravenLatitude, true)
+                ravenPhoneNo.toString(), ravenCarrier.toString(), ravenMessage.toString(), ravenLongitude, ravenLatitude, true)
 
         MainActivity.ravenID++
 
