@@ -35,6 +35,7 @@ import kotlin.concurrent.fixedRateTimer
 private var locationManager: LocationManager? = null
 private val PermissionsRequestCode = 234
 
+//GMAIL PASSWORD => RavenAndroid123
 
 class MainActivity : AppCompatActivity() {
 
@@ -50,7 +51,7 @@ class MainActivity : AppCompatActivity() {
         var currentLongitude: Double = 100.0
         var currentLatitude: Double = 100.0
         //emptyRaven works as a placeholder to avoid NullPointerExceptions when checking for Ravens in ravenArray.
-        val emptyRaven = Raven(Int.MAX_VALUE, "0", "0", "0", 0.0, 0.0, true)
+        val emptyRaven = Raven(Int.MAX_VALUE, "0", "0", "Sprint", "0", 0.0, 0.0, true)
         //ravenArray is continuously updated w latest Ravens in db accessible from everywhere in the app.
         var ravenArray: Array<Raven> = arrayOf<Raven>(emptyRaven, emptyRaven, emptyRaven)
         var mTracking = false

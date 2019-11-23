@@ -29,8 +29,9 @@
 
     <TextView
         android:id="@+id/nameTextView"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:textAlignment="center"
         android:layout_marginBottom="13dp"
         android:gravity="center"
         android:text="Name of the recipient"
@@ -59,8 +60,9 @@
 
     <TextView
         android:id="@+id/phoneNoTextView"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:textAlignment="center"
         android:layout_marginBottom="14dp"
         android:text="Phone number of the recipient"
         android:textColor="@color/color2"
@@ -80,12 +82,41 @@
         android:background="@color/color5"
         android:inputType="phone"
         android:textAlignment="center"
-        app:layout_constraintBottom_toTopOf="@+id/addressTextView"
+        app:layout_constraintBottom_toTopOf="@+id/carrierTextView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         tools:layout_constraintBottom_creator="1"
         tools:layout_constraintLeft_creator="1"
         tools:layout_constraintRight_creator="1" />
+
+    <TextView
+        android:id="@+id/carrierTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:layout_marginBottom="14dp"
+        android:text="Carrier of the recipient"
+        android:textColor="@color/color2"
+        android:textSize="18dp"
+        app:layout_constraintBottom_toTopOf="@+id/enteredCarrier"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:layout_constraintBottom_creator="1"
+        tools:layout_constraintRight_creator="1"
+        />
+
+    <Spinner
+        android:id="@+id/enteredCarrier"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@id/addressTextView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:layout_constraintBottom_creator="1"
+        tools:layout_constraintLeft_creator="1"
+        tools:layout_constraintRight_creator="1"
+        android:layout_marginBottom="20dp"
+        />
 
     <TextView
         android:id="@+id/addressTextView"
@@ -190,7 +221,6 @@
         tools:layout_constraintLeft_creator="1"
         tools:layout_constraintRight_creator="1"
         tools:layout_constraintTop_creator="1" />
-
 
 
 </android.support.constraint.ConstraintLayout>

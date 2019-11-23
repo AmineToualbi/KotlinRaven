@@ -12,10 +12,7 @@ import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.util.Log
 import android.view.View
-import android.widget.Button
-import android.widget.ImageButton
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import com.toualbiapps.aminetoualbi.raven.R
 import com.toualbiapps.aminetoualbi.raven.view.application.DatabaseApp
 import com.toualbiapps.aminetoualbi.raven.view.model.Raven
@@ -27,7 +24,7 @@ import org.json.JSONArray
 import java.io.IOException
 import javax.inject.Inject
 
-class NewRaven : AppCompatActivity() {
+class NewRaven : AppCompatActivity(), AdapterView.OnItemSelectedListener {
 
     //Fields used to create Ravens.
     var ravenName: String? = null
@@ -64,12 +61,22 @@ class NewRaven : AppCompatActivity() {
     //List that will contain the current address "reverse geocoded" by the geocoder.
     var addresses: List<Address> = emptyList()
 
-
+    var carriers = arrayOf("T-Mobile", "AT&T", "Sprint")
+    var spinner: Spinner? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_new_raven)
 
+        spinner = findViewById(R.id.enteredCarrier) as Spinner
+        spinner!!.setOnItemSelectedListener(this)
+
+        // Create an ArrayAdapter using a simple spinner layout and languages array
+        val aa = ArrayAdapter(this, android.R.layout.simple_spinner_item, carriers)
+        // Set layout to use when the list of choices appear
+        aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        // Set Adapter to Spinner
+        spinner!!.setAdapter(aa)
 
         //Access to app db.
         DatabaseApp.component.inject(this)
@@ -90,7 +97,6 @@ class NewRaven : AppCompatActivity() {
 
         //RequestPermission object.
         req_permission = RequestPermission(this,permissionList,PermissionsRequestCode)
-
 
         //Confirm action:
         validButton.setOnClickListener {
@@ -186,6 +192,12 @@ class NewRaven : AppCompatActivity() {
 
     }
 
+    override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+    }
+
+    override fun onNothingSelected(parent: AdapterView<*>?) {
+    }
+
 
     //Function to get correct Raven ID for new object to be saved in the Database.
     private fun updatedRavenID(ravenData: List<Raven>) : Int {
@@ -235,7 +247,7 @@ class NewRaven : AppCompatActivity() {
     private fun saveRaven(newRavenID: Int, goBackToMainActivity: Intent) {
 
         val raven: Raven = Raven(newRavenID, ravenName.toString(),
-                ravenPhoneNo.toString(), ravenMessage.toString(), ravenLongitude, ravenLatitude, true)
+                ravenPhoneNo.toString(), "Sprint", ravenMessage.toString(), ravenLongitude, ravenLatitude, true)
 
         MainActivity.ravenID++
 

@@ -9,7 +9,7 @@ import com.toualbiapps.aminetoualbi.raven.view.model.Raven
         entities = [
         Raven::class
         ],
-        version = 3,
+        version = 4,
         exportSchema = false
 )
 

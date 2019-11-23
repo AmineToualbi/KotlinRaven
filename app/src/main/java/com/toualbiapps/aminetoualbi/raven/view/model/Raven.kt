@@ -9,6 +9,7 @@ class Raven(
             @PrimaryKey var id: Int,         //id of the raven.
             var name: String,
             var phoneNo: String,
+            var carrier: String,
             var message: String,
             var longitude: Double,
             var latitude: Double,

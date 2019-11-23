@@ -22,7 +22,7 @@ import kotlinx.android.synthetic.main.activity_welcome.*
 
 class Welcome : AppCompatActivity() {
 
-    var sharedPrefs: SharedPreferences? = null
+    var sharedPrefs: SharedPreferences? = null          //SharedPrefs allow to check if this is the first launch of the app.
     var layout_bars: LinearLayout? = null
     var bottomBars: ArrayList<TextView> = arrayListOf()
     var screens: IntArray = intArrayOf(
