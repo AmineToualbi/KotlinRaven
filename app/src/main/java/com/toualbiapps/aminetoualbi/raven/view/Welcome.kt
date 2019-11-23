@@ -63,9 +63,6 @@ class Welcome : AppCompatActivity() {
             launchMain()
     }
 
-    public fun skip(v: View) {
-        launchMain()
-    }
 
     private fun coloredBars(thisScreen: Int) {
         val colorsInactive = resources.getIntArray(R.array.dot_on_page_not_active)
