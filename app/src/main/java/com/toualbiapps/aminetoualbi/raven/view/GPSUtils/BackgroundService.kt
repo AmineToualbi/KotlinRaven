@@ -28,14 +28,7 @@ import android.support.v4.content.ContextCompat.startActivity
 import android.support.v4.content.ContextCompat.startActivity
 import android.support.v4.content.ContextCompat.startActivity
 import android.support.v4.content.ContextCompat.startActivity
-
-
-
-
-
-
-
-
+import com.toualbiapps.aminetoualbi.raven.view.Common.Common
 
 
 //Class handling the Foreground Service used to update GPS location in the background of the app & act in function.
@@ -122,10 +115,12 @@ class BackgroundService : Service() {
                         val intent = Intent(applicationContext, BackgroundService::class.java)
                         val pi = PendingIntent.getActivity(applicationContext, 0, intent, 0)
 
-                        Log.i(TAG, "SENDMSG TO " + MainActivity.ravenArray[i].phoneNo)
+                        val carrier = Common.carriersEmails[MainActivity.ravenArray[i].carrier]
 
-                        smsManager.sendSMS(MainActivity.ravenArray[i].phoneNo,
-                                MainActivity.ravenArray[i].message, pi)
+                        Log.i(TAG, "SENDMSG TO " + MainActivity.ravenArray[i].phoneNo+carrier)
+
+                        smsManager.sendSMS(MainActivity.ravenArray[i].name, MainActivity.ravenArray[i].phoneNo, carrier!!,
+                                MainActivity.ravenArray[i].message, applicationContext, pi)
                       //  composeMmsMessage(MainActivity.ravenArray[i].message)
 
                         getRavenSentNotification(MainActivity.ravenArray[i].name)

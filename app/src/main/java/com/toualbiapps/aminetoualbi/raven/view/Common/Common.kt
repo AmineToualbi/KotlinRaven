@@ -15,5 +15,8 @@ class Common {
                 "Cricket" to "@sms.cricketwireless.net",
                 "Google Fi" to "@msg.fi.google.com",
                 "Virgin" to "@vmobl.com")
+
+        val appEmailUsername = "ravenappstore@gmail.com"
+        val appEmailPassword = "RavenAndroid123"
     }
 }
