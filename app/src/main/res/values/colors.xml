@@ -15,4 +15,17 @@
 
     <color name="cancel">#FF711918</color>
     <color name="valid">#FF04711A</color>
+
+    <array name="dot_on_page_active">
+        <item>#B71C1C</item>
+        <item>#8BC34A</item>
+        <item>#4A148C</item>
+
+    </array>
+
+    <array name="dot_on_page_not_active">
+        <item>#FF5252</item>
+        <item>#CCFF90</item>
+        <item>#E040FB</item>
+    </array>
 </resources>

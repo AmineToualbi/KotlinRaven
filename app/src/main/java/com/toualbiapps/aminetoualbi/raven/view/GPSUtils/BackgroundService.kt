@@ -17,11 +17,25 @@ import android.annotation.TargetApi
 import com.toualbiapps.aminetoualbi.raven.view.SMSUtils.SMSManager
 import android.app.PendingIntent
 import android.content.SharedPreferences
+import android.net.Uri
 import android.os.*
 import com.toualbiapps.aminetoualbi.raven.view.MainActivity
 import com.toualbiapps.aminetoualbi.raven.view.application.DatabaseApp
 import com.toualbiapps.aminetoualbi.raven.view.providers.IRavenProvider
 import javax.inject.Inject
+import android.net.Uri.fromParts
+import android.support.v4.content.ContextCompat.startActivity
+import android.support.v4.content.ContextCompat.startActivity
+import android.support.v4.content.ContextCompat.startActivity
+import android.support.v4.content.ContextCompat.startActivity
+
+
+
+
+
+
+
+
 
 
 //Class handling the Foreground Service used to update GPS location in the background of the app & act in function.
@@ -112,6 +126,7 @@ class BackgroundService : Service() {
 
                         smsManager.sendSMS(MainActivity.ravenArray[i].phoneNo,
                                 MainActivity.ravenArray[i].message, pi)
+                      //  composeMmsMessage(MainActivity.ravenArray[i].message)
 
                         getRavenSentNotification(MainActivity.ravenArray[i].name)
 
@@ -124,6 +139,16 @@ class BackgroundService : Service() {
             }
         }
 
+
+    /*    fun composeMmsMessage(message: String) {
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                data = Uri.parse("smsto:")  // This ensures only SMS apps respond
+                putExtra("sms_body", message)
+            }
+            if (intent.resolveActivity(packageManager) != null) {
+                startActivity(intent)
+            }
+        }*/
 
         override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
             Log.i(TAG, "onStatusChanged " + status)

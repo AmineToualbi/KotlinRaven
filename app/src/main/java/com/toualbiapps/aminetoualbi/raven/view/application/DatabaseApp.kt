@@ -12,6 +12,7 @@ class DatabaseApp : Application() {
     override fun onCreate() {
         super.onCreate()
 
+
         component = DaggerDatabaseAppComponent
                 .builder()
                 .contextModule(
