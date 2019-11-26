@@ -53,9 +53,13 @@ class Welcome : AppCompatActivity() {
             finish()
         }
         coloredBars(0)
+
+        nextButton!!.setOnClickListener {
+            next()
+        }
     }
 
-    public fun next(v: View) {
+    fun next() {
         val i = getItem(+1)
         if (i < screens.size)
             viewPager!!.setCurrentItem(i)

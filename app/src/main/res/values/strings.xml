@@ -10,4 +10,10 @@
     <string name="invalid_lat_long_used">Invalid latitude and longitude</string>
     <string name="no_address_found">No address found for that location</string>
     <string name="address_found">Address found</string>
+
+    <string name="intro_text1">Welcome to Raven</string>
+    <string name="intro_text2">Raven allows you to notify people of your whereabouts with no action on your part.</string>
+    <string name="intro_text3_1">Raven stores all your information only on your device.</string>
+    <string name="intro_text3_2">Raven has no connectivity to any external server for privacy purposes.</string>
+    <string name="intro_text3_3">Your information is only shared when you reach the location you entered.</string>
 </resources>

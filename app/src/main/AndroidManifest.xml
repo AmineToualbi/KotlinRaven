@@ -17,8 +17,8 @@
         android:roundIcon="@drawable/ravenlogoplaystore"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".view.Welcome"></activity>
-        <activity android:name=".view.Loading">
+        <activity android:name=".view.Loading"></activity>
+        <activity android:name=".view.Welcome">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.intent.action.VIEW" />
